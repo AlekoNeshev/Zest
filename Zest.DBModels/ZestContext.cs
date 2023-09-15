@@ -100,7 +100,7 @@ public partial class ZestContext : DbContext
 
         modelBuilder.Entity<CommunityFollower>(entity =>
         {
-            entity.HasNoKey();
+            entity.HasKey(k => new { k.AccountId, k.CommunityId });
 
             entity.Property(e => e.CreatedOn).HasColumnType("datetime");
 
@@ -117,7 +117,7 @@ public partial class ZestContext : DbContext
 
         modelBuilder.Entity<CommunityModerator>(entity =>
         {
-            entity.HasNoKey();
+            entity.HasKey(k => new { k.AccountId, k.CommunityId });
 
             entity.Property(e => e.CreatedOn).HasColumnType("datetime");
 
@@ -134,7 +134,7 @@ public partial class ZestContext : DbContext
 
         modelBuilder.Entity<Follower>(entity =>
         {
-            entity.HasNoKey();
+            entity.HasKey(k => new { k.FollowerId, k.FollowedId });
 
             entity.Property(e => e.CreatedOn).HasColumnType("datetime");
 
