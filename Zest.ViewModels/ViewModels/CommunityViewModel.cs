@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace Zest.ViewModels.ViewModels
 {
-    internal class CommunityViewModel
+    public class CommunityViewModel
     {
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string Creator { get; set; }
     }
 }

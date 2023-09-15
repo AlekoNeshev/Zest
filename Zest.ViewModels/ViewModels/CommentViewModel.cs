@@ -8,5 +8,8 @@ namespace Zest.ViewModels.ViewModels
 {
     internal class CommentViewModel
     {
+        public string Publisher { get; set; }
+        public string Text { get; set; }
+        public DateTime PostedOn { get; set; }
     }
 }
