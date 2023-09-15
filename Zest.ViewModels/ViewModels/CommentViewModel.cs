@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Zest.ViewModels.ViewModels
 {
-    internal class CommentViewModel
+    public class CommentViewModel
     {
         public string Publisher { get; set; }
         public string Text { get; set; }
