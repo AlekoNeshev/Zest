@@ -16,4 +16,14 @@ public partial class Comment
     public int? CommentId { get; set; }
 
     public DateTime CreatedOn { get; set; }
+
+    public virtual Account Account { get; set; } = null!;
+
+    public virtual Comment? CommentNavigation { get; set; }
+
+    public virtual Community Community { get; set; } = null!;
+
+    public virtual ICollection<Comment> InverseCommentNavigation { get; set; } = new List<Comment>();
+
+    public virtual ICollection<Like> Likes { get; set; } = new List<Like>();
 }

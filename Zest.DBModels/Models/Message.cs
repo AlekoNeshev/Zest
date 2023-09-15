@@ -14,4 +14,8 @@ public partial class Message
     public int ReceiverId { get; set; }
 
     public DateTime CreatedOn { get; set; }
+
+    public virtual Account Receiver { get; set; } = null!;
+
+    public virtual Account Sender { get; set; } = null!;
 }

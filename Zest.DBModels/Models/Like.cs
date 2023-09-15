@@ -16,4 +16,10 @@ public partial class Like
     public int? CommentId { get; set; }
 
     public DateTime CreatedOn { get; set; }
+
+    public virtual Account Account { get; set; } = null!;
+
+    public virtual Comment? Comment { get; set; }
+
+    public virtual Post? Post { get; set; }
 }
