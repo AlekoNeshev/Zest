@@ -1,4 +1,6 @@
 
+using Zest.DBModels;
+
 namespace Zest
 {
     public class Program
@@ -13,7 +15,11 @@ namespace Zest
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-
+            builder.Services.AddAutoMapper(bl =>
+            {
+                bl.AddProfile(new MappingProfile());
+            });
+            builder.Services.AddDbContext<ZestContext>();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
