@@ -18,5 +18,24 @@ namespace Zest.Controllers
         {
             return zestContext.Accounts.Where(x=>x.Id ==id).FirstOrDefault();
         }
+        [HttpPost]
+        public async Task<ActionResult> Add(string firstName, string lastName, string username, string email, string password, DateTime birthdate)
+        {
+            zestContext.Add(new Account
+            {
+                FirstName = firstName,
+                LastName = lastName,
+                Username = username,
+                Email = email,
+                Password = password,
+                Birthdate = birthdate,
+                CreatedOn = DateTime.UtcNow,
+                IsAdmin = false
+
+            }) ;
+            zestContext.SaveChanges();
+            return Ok();
+        }
+
     }
 }

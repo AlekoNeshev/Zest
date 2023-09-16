@@ -42,7 +42,7 @@ public partial class ZestContext : DbContext
     {
         modelBuilder.Entity<Account>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.Birthdate).HasColumnType("date");
             entity.Property(e => e.CreatedOn).HasColumnType("datetime");
             entity.Property(e => e.Email)
@@ -62,7 +62,7 @@ public partial class ZestContext : DbContext
 
         modelBuilder.Entity<Comment>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.CreatedOn).HasColumnType("datetime");
             entity.Property(e => e.Text).IsUnicode(false);
 
@@ -83,7 +83,7 @@ public partial class ZestContext : DbContext
 
         modelBuilder.Entity<Community>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.CreatedOn).HasColumnType("datetime");
             entity.Property(e => e.Information)
                 .HasMaxLength(50)
@@ -151,7 +151,7 @@ public partial class ZestContext : DbContext
 
         modelBuilder.Entity<Like>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.CreatedOn).HasColumnType("datetime");
 
             entity.HasOne(d => d.Account).WithMany(p => p.Likes)
@@ -170,7 +170,7 @@ public partial class ZestContext : DbContext
 
         modelBuilder.Entity<Message>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.CreatedOn).HasColumnType("datetime");
 
             entity.HasOne(d => d.Receiver).WithMany(p => p.MessageReceivers)
@@ -186,7 +186,7 @@ public partial class ZestContext : DbContext
 
         modelBuilder.Entity<Post>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.CreatedOn).HasColumnType("datetime");
             entity.Property(e => e.Text).IsUnicode(false);
             entity.Property(e => e.Title)
