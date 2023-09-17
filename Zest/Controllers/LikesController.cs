@@ -18,21 +18,43 @@ namespace Zest.Controllers
         [HttpPost]
         public async Task<ActionResult> Add(int likerId, int postId, int commentId, bool value)
         {
-            context.Add(new Like
-            { 
-                AccountId = likerId,
-                PostId = postId, 
-                CommentId = commentId, 
-                Value = value,
-                CreatedOn = DateTime.Now
-            });
+            if (postId!=0)
+            {
+                context.Add(new Like
+                {
+                    AccountId = likerId,
+                    PostId = postId,
+                 
+                    Value = value,
+                    CreatedOn = DateTime.Now
+                });
+            }
+            else if(postId==0 && commentId !=0) 
+            {
+                context.Add(new Like
+                {
+                    AccountId = likerId,
+                  
+                    CommentId = commentId,
+                    Value = value,
+                    CreatedOn = DateTime.Now
+                });
+            }
             context.SaveChanges();
             return Ok();
         }
         [HttpDelete]
         public async Task<ActionResult> Remove(int likerId, int postId, int commentId)
         {
-            Like like = context.Likes.FirstOrDefault(l => l.AccountId == likerId && l.PostId == postId && l.CommentId == commentId);
+            Like like = new Like();
+            if (postId!=0)
+            {
+                 like = context.Likes.FirstOrDefault(l => l.AccountId == likerId && l.PostId == postId);
+            }
+            else if (commentId!=0)
+            {
+                like = context.Likes.FirstOrDefault(l => l.AccountId == likerId && l.CommentId == commentId);
+            }
             context.Remove(like);
             context.SaveChanges();
             return Ok();

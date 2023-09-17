@@ -15,7 +15,7 @@ namespace Zest.Controllers
         {
             this.context = context;
         }
-
+        [HttpGet]
         public async Task<ActionResult<Community>> Find(int id)
         {
             return context.Communities.Where(x=>x.Id == id).FirstOrDefault();

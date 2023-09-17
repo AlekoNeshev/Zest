@@ -13,16 +13,13 @@ namespace Zest.Controllers
         {
             this.context = context;
         }
+        [HttpPost]
         public async Task<ActionResult> Add(int accountId, int communityId)
         {
             context.Add(new CommunityModerator { AccountId = accountId, CommunityId = communityId, CreatedOn = DateTime.Now });
             context.SaveChanges();
             return Ok();
         }
-        [HttpPost]
-        public IActionResult Index()
-        {
-            return View();
-        }
+      
     }
 }

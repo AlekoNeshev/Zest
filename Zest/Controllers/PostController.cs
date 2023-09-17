@@ -31,6 +31,7 @@ namespace Zest.Controllers
                 CommunityId = communityId,
                 CreatedOn = DateTime.Now,
             });
+            context.SaveChanges();
             return Ok();
         }
     }

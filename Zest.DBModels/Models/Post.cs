@@ -22,4 +22,5 @@ public partial class Post
     public virtual Community Community { get; set; } = null!;
 
     public virtual ICollection<Like> Likes { get; set; } = new List<Like>();
+    public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 }
