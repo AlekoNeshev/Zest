@@ -4,11 +4,11 @@ using Zest.DBModels.Models;
 
 namespace Zest.Controllers
 {
+    [Route("api/[controller]")]
     [ApiController]
-    [Route("[controller]")]
     public class AccountController : ControllerBase
     {
-        public ZestContext zestContext;
+        private ZestContext zestContext;
         public AccountController(ZestContext zestContext)
         {
             this.zestContext = zestContext;
@@ -29,7 +29,7 @@ namespace Zest.Controllers
                 Email = email,
                 Password = password,
                 Birthdate = birthdate,
-                CreatedOn = DateTime.UtcNow,
+                CreatedOn = DateTime.Now,
                 IsAdmin = false
 
             }) ;
