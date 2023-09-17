@@ -13,6 +13,8 @@ namespace Zest.Controllers
         {
             this.context = context;
         }
+
+        [Route("account/{accountId}/community/{communityId}")]
         [HttpPost]
         public async Task<ActionResult> Add(int accountId, int communityId)
         {

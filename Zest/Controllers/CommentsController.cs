@@ -14,8 +14,9 @@ namespace Zest.Controllers
         {
             this.context = context;
         }
+        [Route("add/{accountId}/post/{postId}/comment/{commentId}")]
         [HttpPost]
-        public async Task<ActionResult> Add(int accountId, int postId, string text, int commentId = 0)
+        public async Task<ActionResult> Add(int accountId, int postId, [FromBody]string text, int commentId = 0)
         {
             if (postId!=0 && commentId == 0)
             {
@@ -30,7 +31,7 @@ namespace Zest.Controllers
             return Ok();
         }
 
-        
+        [Route("remove/{accountId}/post/{postId}/comment/{commentId}")]
         [HttpDelete]
         public async Task<ActionResult> Remove(int accountId, int postId, int commentId)
         {

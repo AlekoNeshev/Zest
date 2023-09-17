@@ -14,14 +14,16 @@ namespace Zest.Controllers
         {
             this.context = context;
         }
-
+        [Route("{id}")]
         [HttpGet]
         public async Task<ActionResult<Post>> Find(int id)
         {
             return context.Posts.Find(id);
         }
+
+        [Route("remove/{title}/account/{publisherId}/community/{communityId}")]
         [HttpPost]
-        public async Task<ActionResult> Add(string title, string text, int publisherId, int communityId)
+        public async Task<ActionResult> Add(string title,[FromBody] string text, int publisherId, int communityId)
         {
             context.Add(new  Post 
             { 

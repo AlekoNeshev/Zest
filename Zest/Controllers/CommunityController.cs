@@ -15,14 +15,15 @@ namespace Zest.Controllers
         {
             this.context = context;
         }
+        [Route("{id}")]
         [HttpGet]
         public async Task<ActionResult<Community>> Find(int id)
         {
-            return context.Communities.Where(x=>x.Id == id).FirstOrDefault();
+            return context.Communities.Where(x => x.Id == id).FirstOrDefault();
         }
-
+        [Route("add/{name}/creator/{creatorId}")]
         [HttpPost]
-        public async Task<ActionResult> Add(string name, string discription, int creatorId)
+        public async Task<ActionResult> Add(string name, [FromBody] string discription, int creatorId)
         {
             context.Add(new Community
             {

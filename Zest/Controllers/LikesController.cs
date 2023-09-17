@@ -14,7 +14,7 @@ namespace Zest.Controllers
         {
             this.context = context;
         }
-
+        [Route("likes/add/{likerId}/post/{postId}/comment/{commentId}/value/{value}")]
         [HttpPost]
         public async Task<ActionResult> Add(int likerId, int postId, int commentId, bool value)
         {
@@ -43,6 +43,7 @@ namespace Zest.Controllers
             context.SaveChanges();
             return Ok();
         }
+        [Route("likes/remove/{likerId}/post/{postId}/comment/{commentId}")]
         [HttpDelete]
         public async Task<ActionResult> Remove(int likerId, int postId, int commentId)
         {

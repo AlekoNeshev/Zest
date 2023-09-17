@@ -15,7 +15,7 @@ namespace Zest.Controllers
         {
             this.context=context;
         }
-
+        [Route("followers/add/{followerId}/followed/{followedId}")]
         [HttpPost]
         public async Task<ActionResult> Add(int followerId, int followedId)
         {

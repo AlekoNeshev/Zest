@@ -15,14 +15,15 @@ namespace Zest.Controllers
         {
             this.context=context;
         }
-
+        [Route("add/{senderId}/receiver/{receiverId}")]
         [HttpPost]
-        public async Task<ActionResult> Add(int senderId, int receiverId, string text)
+        public async Task<ActionResult> Add(int senderId, int receiverId,[FromBody] string text)
         {
             context.Add(new Message { SenderId = senderId, ReceiverId = receiverId, Text = text, CreatedOn = DateTime.Now });
             context.SaveChanges();
             return Ok();
         }
+        [Route("remove/{senderId}/receiver/{receiverId}")]
         [HttpDelete]
         public async Task<ActionResult> Remove(int senderId, int receiverId)
         {
