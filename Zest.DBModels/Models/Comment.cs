@@ -11,7 +11,7 @@ public partial class Comment
 
     public int AccountId { get; set; }
 
-    public int CommunityId { get; set; }
+    public int PostId { get; set; }
 
     public int? CommentId { get; set; }
 
@@ -21,7 +21,7 @@ public partial class Comment
 
     public virtual Comment? CommentNavigation { get; set; }
 
-    public virtual Community Community { get; set; } = null!;
+    public virtual Post Post { get; set; } = null!;
 
     public virtual ICollection<Comment> InverseCommentNavigation { get; set; } = new List<Comment>();
 

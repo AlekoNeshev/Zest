@@ -15,8 +15,6 @@ public partial class Community
 
     public DateTime CreatedOn { get; set; }
 
-    public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
-
     public virtual Account Creator { get; set; } = null!;
 
     public virtual ICollection<Post> Posts { get; set; } = new List<Post>();

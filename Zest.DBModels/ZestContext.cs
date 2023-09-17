@@ -75,10 +75,10 @@ public partial class ZestContext : DbContext
                 .HasForeignKey(d => d.CommentId)
                 .HasConstraintName("FK_Comments_Comments");
 
-            entity.HasOne(d => d.Community).WithMany(p => p.Comments)
-                .HasForeignKey(d => d.CommunityId)
+            entity.HasOne(d => d.Post).WithMany(p => p.Comments)
+                .HasForeignKey(d => d.PostId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Comments_Communities");
+                .HasConstraintName("FK_Comments_Posts");
         });
 
         modelBuilder.Entity<Community>(entity =>
