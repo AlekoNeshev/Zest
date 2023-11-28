@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Zest.DBModels;
 using Zest.DBModels.Models;
+using Zest.Hubs;
 
 namespace Zest.Controllers
 {
@@ -10,11 +12,13 @@ namespace Zest.Controllers
     public class LikesController : ControllerBase
     {
         private ZestContext context;
-        public LikesController(ZestContext context)
+        private IHubContext<LikesHub> _LikesHubCont;
+        public LikesController(ZestContext context, IHubContext<LikesHub> lhc)
         {
             this.context = context;
+            this._LikesHubCont = lhc;
         }
-        [Route("likes/add/{likerId}/post/{postId}/comment/{commentId}/value/{value}")]
+        [Route("add/{likerId}/post/{postId}/comment/{commentId}/value/{value}")]
         [HttpPost]
         public async Task<ActionResult> Add(int likerId, int postId, int commentId, bool value)
         {
@@ -41,9 +45,10 @@ namespace Zest.Controllers
                 });
             }
             context.SaveChanges();
+            await _LikesHubCont.Clients.All.SendAsync("SignalLike", postId);
             return Ok();
         }
-        [Route("likes/remove/{likerId}/post/{postId}/comment/{commentId}")]
+        [Route("remove/{likerId}/post/{postId}/comment/{commentId}")]
         [HttpDelete]
         public async Task<ActionResult> Remove(int likerId, int postId, int commentId)
         {

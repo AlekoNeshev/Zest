@@ -1,5 +1,7 @@
 
+using Microsoft.EntityFrameworkCore;
 using Zest.DBModels;
+using Zest.Hubs;
 
 namespace Zest
 {
@@ -15,11 +17,12 @@ namespace Zest
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddSignalR();
             builder.Services.AddAutoMapper(bl =>
             {
                 bl.AddProfile(new MappingProfile());
             });
-            builder.Services.AddDbContext<ZestContext>();
+            builder.Services.AddDbContext<ZestContext>(b=> b.UseLazyLoadingProxies());
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -33,6 +36,7 @@ namespace Zest
 
             app.UseAuthorization();
 
+            app.MapHub<LikesHub>("/likeshub");
 
             app.MapControllers();
 

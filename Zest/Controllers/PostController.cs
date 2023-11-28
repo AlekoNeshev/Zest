@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Zest.DBModels;
 using Zest.DBModels.Models;
+using Zest.ViewModels.ViewModels;
 
 namespace Zest.Controllers
 {
@@ -10,15 +12,18 @@ namespace Zest.Controllers
     public class PostController : ControllerBase
     {
         private ZestContext context;
-        public PostController(ZestContext context)
+        private IMapper mapper;
+        public PostController(ZestContext context, IMapper mapper)
         {
             this.context = context;
+            this.mapper = mapper;
         }
         [Route("{id}")]
         [HttpGet]
-        public async Task<ActionResult<Post>> Find(int id)
+        public async Task<ActionResult<PostViewModel>> Find(int id)
         {
-            return context.Posts.Find(id);
+           // Console.WriteLine(context.Posts.Find(id).Account.Username);
+            return mapper.Map<PostViewModel>(context.Posts.Find(id));
         }
 
         [Route("remove/{title}/account/{publisherId}/community/{communityId}")]
@@ -35,6 +40,12 @@ namespace Zest.Controllers
             });
             context.SaveChanges();
             return Ok();
+        }
+        [Route("getByDate")]
+        [HttpGet]
+        public async Task<ActionResult<PostViewModel[]>> GetByDate()
+        {
+            return mapper.Map<PostViewModel[]>(context.Posts.OrderByDescending(x => x.CreatedOn).ToArray());
         }
     }
 }

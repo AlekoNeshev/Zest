@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Zest.DBModels;
 using Zest.DBModels.Models;
+using Zest.ViewModels.ViewModels;
 
 namespace Zest.Controllers
 {
@@ -9,15 +11,23 @@ namespace Zest.Controllers
     public class AccountController : ControllerBase
     {
         private ZestContext zestContext;
-        public AccountController(ZestContext zestContext)
+        private IMapper mapper;
+        public AccountController(ZestContext zestContext, IMapper mapper)
         {
             this.zestContext = zestContext;
+            this.mapper = mapper;
         }
         [Route("{id}")]
         [HttpGet]
-        public async Task<ActionResult<Account>> Index(int id)
+        public async Task<ActionResult<AccountViewModel>> Index(int id)
         {
-            return zestContext.Accounts.Where(x=>x.Id ==id).FirstOrDefault();
+            return mapper.Map<AccountViewModel>(zestContext.Accounts.Where(x => x.Id ==id).FirstOrDefault());
+        }
+        [Route("email/{email}/password/{password}")]
+        [HttpGet]
+        public async Task<ActionResult<AccountViewModel>> FindByEmail(string email, string password)
+        {
+            return mapper.Map<AccountViewModel>(zestContext.Accounts.Where(x=>x.Email ==email && x.Password==password).FirstOrDefault());
         }
         [Route("add/{firstName}/{lastName}/{email}/{birthdate}")]
         [HttpPost]

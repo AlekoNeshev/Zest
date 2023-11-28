@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Zest.DBModels;
 using Zest.DBModels.Models;
+using Zest.ViewModels.ViewModels;
 
 namespace Zest.Controllers
 {
@@ -11,15 +13,23 @@ namespace Zest.Controllers
     public class CommunityController : ControllerBase
     {
         private ZestContext context;
-        public CommunityController(ZestContext context)
+        private IMapper mapper;
+        public CommunityController(ZestContext context, IMapper mapper)
         {
             this.context = context;
+            this.mapper = mapper;
         }
         [Route("{id}")]
         [HttpGet]
-        public async Task<ActionResult<Community>> Find(int id)
+        public async Task<ActionResult<CommunityViewModel>> Find(int id)
         {
-            return context.Communities.Where(x => x.Id == id).FirstOrDefault();
+            return mapper.Map<CommunityViewModel>(context.Communities.Where(x => x.Id == id).FirstOrDefault());
+        }
+        [Route("getAll")]
+        [HttpGet]
+        public async Task<ActionResult<CommunityViewModel[]>> GetAll()
+        {
+            return mapper.Map<CommunityViewModel[]>(context.Communities.ToArray());
         }
         [Route("add/{name}/creator/{creatorId}")]
         [HttpPost]
