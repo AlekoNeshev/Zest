@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Zest.DBModels;
 using Zest.DBModels.Models;
+using Zest.ViewModels.ViewModels;
 
 namespace Zest.Controllers
 {
@@ -10,9 +12,17 @@ namespace Zest.Controllers
     public class CommentsController : ControllerBase
     {
         private ZestContext context;
-        public CommentsController(ZestContext context)
+        private IMapper mapper;
+        public CommentsController(ZestContext context, IMapper mapper)
         {
             this.context = context;
+            this.mapper = mapper;
+        }
+        [HttpGet]
+        [Route("{id}")]
+        public async Task<ActionResult<CommentViewModel>> Find(int id)
+        {
+            return mapper.Map<CommentViewModel>(context.Comments.Find(id));
         }
         [Route("add/{accountId}/post/{postId}/comment/{commentId}")]
         [HttpPost]
