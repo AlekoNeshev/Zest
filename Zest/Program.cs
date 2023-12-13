@@ -37,6 +37,7 @@ namespace Zest
             app.UseAuthorization();
 
             app.MapHub<LikesHub>("/likeshub");
+            app.MapHub<CommentsHub>("/commentshub");
 
             app.MapControllers();
 
