@@ -17,7 +17,9 @@ namespace Zest
 
             CreateMap<Comment, CommentViewModel>()
                 .ForMember(dest => dest.Publisher, op =>op.MapFrom(src=>src.Account.Username))
-                .ForMember(dest=> dest.PostedOn, op=>op.MapFrom(src=>src.CreatedOn));
+                .ForMember(dest=> dest.PostedOn, op=>op.MapFrom(src=>src.CreatedOn))
+                 .ForMember(dest => dest.Likes, op => op.MapFrom(src => src.Likes.Where(x => x.Value == true).Count()))
+                .ForMember(dest => dest.Dislikes, op => op.MapFrom(src => src.Likes.Where(x => x.Value == false).Count())); ;
 
             CreateMap<Community, CommunityViewModel>()
                 .ForMember(dest => dest.Description, op=>op.MapFrom(src=>src.Information))

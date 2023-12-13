@@ -79,6 +79,12 @@ public partial class ZestContext : DbContext
                 .HasForeignKey(d => d.PostId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Comments_Posts");
+
+            entity.HasMany(d => d.Likes).WithOne(p => p.Comment)
+                .HasForeignKey(d => d.CommentId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_Likes_Comments");
+
         });
 
         modelBuilder.Entity<Community>(entity =>
@@ -161,6 +167,7 @@ public partial class ZestContext : DbContext
 
             entity.HasOne(d => d.Comment).WithMany(p => p.Likes)
                 .HasForeignKey(d => d.CommentId)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_Likes_Comments");
 
             entity.HasOne(d => d.Post).WithMany(p => p.Likes)

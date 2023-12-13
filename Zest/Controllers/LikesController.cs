@@ -45,7 +45,12 @@ namespace Zest.Controllers
                 });
             }
             context.SaveChanges();
+            if(postId != 0)
             await _LikesHubCont.Clients.All.SendAsync("SignalLike", postId);
+            else if(commentId != 0)
+            {
+                await _LikesHubCont.Clients.All.SendAsync("CommentLiked", commentId);
+            }
             return Ok();
         }
         [Route("remove/{likerId}/post/{postId}/comment/{commentId}")]

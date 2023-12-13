@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Zest.DBModels;
 using Zest.DBModels.Models;
+using Zest.Hubs;
 using Zest.ViewModels.ViewModels;
 
 namespace Zest.Controllers
@@ -12,11 +14,13 @@ namespace Zest.Controllers
     public class CommentsController : ControllerBase
     {
         private ZestContext context;
+        private IHubContext<CommentsHub> hubContext;
         private IMapper mapper;
-        public CommentsController(ZestContext context, IMapper mapper)
+        public CommentsController(ZestContext context, IMapper mapper, IHubContext<CommentsHub> hubContext)
         {
             this.context = context;
             this.mapper = mapper;
+            this.hubContext = hubContext;
         }
         [HttpGet]
         [Route("{id}")]
@@ -26,7 +30,7 @@ namespace Zest.Controllers
         }
         [Route("add/{accountId}/post/{postId}/comment/{commentId}")]
         [HttpPost]
-        public async Task<ActionResult> Add(int accountId, int postId, [FromBody]string text, int commentId = 0)
+        public async Task<ActionResult> Add(int accountId, int postId, [FromBody] string text, int commentId = 0)
         {
             if (postId!=0 && commentId == 0)
             {
@@ -38,27 +42,28 @@ namespace Zest.Controllers
                 context.Add(new Comment { AccountId = accountId, PostId = postId, CommentId = commentId, Text = text, CreatedOn = DateTime.Now });
             }
             context.SaveChanges();
+            await hubContext.Clients.All.SendAsync("CommentPosted");
             return Ok();
         }
 
-        [Route("remove/{accountId}/post/{postId}/comment/{commentId}")]
+        [Route("remove/{commentId}")]
         [HttpDelete]
-        public async Task<ActionResult> Remove(int accountId, int postId, int commentId)
+        public async Task<ActionResult> Remove(int commentId)
         {
             Comment comment = new Comment();
-            if (postId!=0 && commentId == 0)
-            {
-                comment = context.Comments.FirstOrDefault(c=>c.AccountId == accountId && c.PostId == postId);
-               
-            }
-            else if (postId!=0 && commentId != 0)
-            {
-                comment = context.Comments.FirstOrDefault(c=>c.AccountId == accountId && c.CommentId == commentId && c.PostId == postId);
-               
-            }
+
+            comment = context.Comments.FirstOrDefault(c => c.Id == commentId);
+
             context.Remove(comment);
             context.SaveChanges();
+            await hubContext.Clients.All.SendAsync("CommentPosted");
             return Ok();
+        }
+        [Route("getCommentsByPost/{postId}")]
+        [HttpGet]
+        public async Task<ActionResult<CommentViewModel[]>> GetCommentsByPost(int postId)
+        {
+            return mapper.Map<CommentViewModel[]>(context.Comments.Where(x => x.PostId == postId).ToArray());
         }
     }
 }
