@@ -12,5 +12,6 @@ namespace Zest.ViewModels.ViewModels
         public string Name { get; set; }
         public string Description { get; set; }
         public string Creator { get; set; }
+        public bool IsSubscribed { get; set; }
     }
 }

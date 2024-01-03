@@ -23,6 +23,7 @@ namespace Zest
                 bl.AddProfile(new MappingProfile());
             });
             builder.Services.AddDbContext<ZestContext>(b=> b.UseLazyLoadingProxies());
+            
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

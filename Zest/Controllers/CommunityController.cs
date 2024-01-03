@@ -25,11 +25,16 @@ namespace Zest.Controllers
         {
             return mapper.Map<CommunityViewModel>(context.Communities.Where(x => x.Id == id).FirstOrDefault());
         }
-        [Route("getAll")]
+        [Route("getAll/{accountId}")]
         [HttpGet]
-        public async Task<ActionResult<CommunityViewModel[]>> GetAll()
+        public async Task<ActionResult<CommunityViewModel[]>> GetAll(int accountId)
         {
-            return mapper.Map<CommunityViewModel[]>(context.Communities.ToArray());
+            CommunityViewModel[] communityViewModels = mapper.Map<CommunityViewModel[]>(context.Communities.ToArray());
+            foreach (var item in communityViewModels)
+            {
+                item.IsSubscribed = context.CommunityFollowers.Where(x=>x.CommunityId == item.Id && x.AccountId == accountId).FirstOrDefault() != null;
+            }
+			return communityViewModels;
         }
         [Route("add/{name}/creator/{creatorId}")]
         [HttpPost]

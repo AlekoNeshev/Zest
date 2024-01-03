@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Zest.DBModels.Models;
 using Zest.ViewModels.ViewModels;
 
@@ -22,9 +23,11 @@ namespace Zest
                 .ForMember(dest => dest.Dislikes, op => op.MapFrom(src => src.Likes.Where(x => x.Value == false).Count())); ;
 
             CreateMap<Community, CommunityViewModel>()
-                .ForMember(dest => dest.Description, op=>op.MapFrom(src=>src.Information))
-                .ForMember(dest => dest.Creator, op=>op.MapFrom(src=>src.Creator.Username));
-        }
+                .ForMember(dest => dest.Description, op => op.MapFrom(src => src.Information))
+                .ForMember(dest => dest.Creator, op => op.MapFrom(src => src.Creator.Username));
+
+            
+		}
 
     }
 }
