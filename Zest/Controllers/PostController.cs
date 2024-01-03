@@ -26,7 +26,7 @@ namespace Zest.Controllers
             return mapper.Map<PostViewModel>(context.Posts.Find(id));
         }
 
-        [Route("remove/{title}/account/{publisherId}/community/{communityId}")]
+        [Route("add/{title}/account/{publisherId}/community/{communityId}")]
         [HttpPost]
         public async Task<ActionResult> Add(string title,[FromBody] string text, int publisherId, int communityId)
         {
