@@ -23,7 +23,7 @@ public partial class Comment
 
     public virtual Post Post { get; set; } = null!;
 
-    public virtual ICollection<Comment> InverseCommentNavigation { get; set; } = new List<Comment>();
+    public virtual ICollection<Comment> Replies { get; set; } = new List<Comment>();
 
     public virtual ICollection<Like> Likes { get; set; } = new List<Like>();
 }

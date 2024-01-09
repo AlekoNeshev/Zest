@@ -13,6 +13,7 @@ namespace Zest.ViewModels.ViewModels
         public string Text { get; set; }
         public int Likes { get; set; }
         public int Dislikes { get; set; }
+        public List<CommentViewModel> Replies { get; set; } = new List<CommentViewModel>();
         public DateTime PostedOn { get; set; }
     }
 }
