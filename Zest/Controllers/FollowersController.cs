@@ -23,5 +23,13 @@ namespace Zest.Controllers
             context.SaveChanges();
             return Ok();
         }
-    }
+		[Route("followers/delete/{followerId}/followed/{followedId}")]
+		[HttpDelete]
+		public async Task<ActionResult> Delete(int followerId, int followedId)
+		{
+			context.Add(new Follower { FollowerId = followerId, FollowedId = followedId, CreatedOn = DateTime.Now });
+			context.SaveChanges();
+			return Ok();
+		}
+	}
 }
