@@ -29,6 +29,10 @@ namespace Zest
             CreateMap<Follower, FollowerViewModel>()
                 .ForMember(dest => dest.FollowerId, op => op.MapFrom(src =>src.FollowerId))
                 .ForMember(dest => dest.FollowerUsername, op => op.MapFrom(src => src.FollowerNavigation.Username));
+
+			CreateMap<Message, MessageViewModel>()
+			   .ForMember(dest => dest.SenderUsername, op => op.MapFrom(src => src.Sender.Username))
+			   .ForMember(dest => dest.Text, op => op.MapFrom(src => src.Text));
 		}
 
     }

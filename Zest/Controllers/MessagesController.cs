@@ -1,7 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Zest.DBModels;
 using Zest.DBModels.Models;
+using Zest.Hubs;
+using Zest.ViewModels.ViewModels;
 
 namespace Zest.Controllers
 {
@@ -10,18 +14,33 @@ namespace Zest.Controllers
     public class MessagesController : ControllerBase
     {
         private ZestContext context;
-
-        public MessagesController(ZestContext context)
+        IMapper mapper;
+		private IHubContext<MessageHub> hubContext;
+		public MessagesController(ZestContext context, IMapper mapper, IHubContext<MessageHub> hubContext)
         {
             this.context=context;
+            this.mapper=mapper;
+            this.hubContext=hubContext;
         }
-        [Route("add/{senderId}/receiver/{receiverId}")]
+        [Route("get/{senderId}/receiver/{receiverId}")]
+        [HttpGet]
+		public async Task<ActionResult<MessageViewModel[]>> Add(int senderId, int receiverId)
+		{
+            Message[] messagesFromSender = context.Messages.Where(x => x.SenderId==senderId && x.ReceiverId==receiverId).ToArray();
+			Message[] messagesFromReceiver = context.Messages.Where(x => x.SenderId==receiverId && x.ReceiverId==senderId).ToArray();
+            Message[] messages = new Message[messagesFromSender.Length + messagesFromReceiver.Length];
+            Array.Copy(messagesFromSender, messages, messagesFromSender.Length);
+            Array.Copy(messagesFromReceiver, 0, messages, messagesFromSender.Length, messagesFromReceiver.Length);
+			return mapper.Map<MessageViewModel[]>(messages.OrderBy(x=>x.CreatedOn).ToArray());
+		}
+		[Route("add/{senderId}/receiver/{receiverId}")]
         [HttpPost]
         public async Task<ActionResult> Add(int senderId, int receiverId,[FromBody] string text)
         {
             context.Add(new Message { SenderId = senderId, ReceiverId = receiverId, Text = text, CreatedOn = DateTime.Now });
             context.SaveChanges();
-            return Ok();
+			await hubContext.Clients.All.SendAsync("MessageSent");
+			return Ok();
         }
         [Route("remove/{senderId}/receiver/{receiverId}")]
         [HttpDelete]
