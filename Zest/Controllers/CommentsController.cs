@@ -26,6 +26,8 @@ namespace Zest.Controllers
         [Route("{id}")]
         public async Task<ActionResult<CommentViewModel>> Find(int id)
         {
+            Comment comment = await context.Comments.FindAsync(id);
+            CommentViewModel vm= mapper.Map<CommentViewModel>(comment);
             return mapper.Map<CommentViewModel>(context.Comments.Find(id));
         }
         [Route("add/{accountId}/post/{postId}/comment/{commentId}")]

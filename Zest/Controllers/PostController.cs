@@ -41,7 +41,20 @@ namespace Zest.Controllers
             context.SaveChanges();
             return Ok();
         }
-        [Route("getByDate")]
+		[Route("remove/{postId}")]
+		[HttpDelete]
+		public async Task<ActionResult> Remove(int postId)
+		{
+			Post post = context.Posts.Find(postId);
+            if (post == null)
+            {
+                return BadRequest();
+            }
+            context.Posts.Remove(post);
+			context.SaveChanges();
+			return Ok();
+		}
+		[Route("getByDate")]
         [HttpGet]
         public async Task<ActionResult<PostViewModel[]>> GetByDate()
         {
