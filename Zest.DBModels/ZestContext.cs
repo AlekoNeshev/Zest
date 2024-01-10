@@ -33,6 +33,7 @@ public partial class ZestContext : DbContext
     public virtual DbSet<Message> Messages { get; set; }
 
     public virtual DbSet<Post> Posts { get; set; }
+    public virtual DbSet<PostResources> PostResources { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
@@ -215,8 +216,19 @@ public partial class ZestContext : DbContext
 			  .OnDelete(DeleteBehavior.Cascade)
 			  .HasConstraintName("FK_Likes_Posts");
 		});
-       
 
+        modelBuilder.Entity<PostResources>(entity =>
+        {
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.CreatedOn).HasColumnType("datetime");
+            entity.Property(e => e.Type).HasMaxLength(10).IsUnicode(false);
+            entity.Property(e => e.Path).IsUnicode(false);
+
+			entity.HasOne(d => d.Post).WithMany(p => p.PostResources)
+			   .HasForeignKey(d => d.PostId)
+			   .OnDelete(DeleteBehavior.ClientSetNull)
+			   .HasConstraintName("FK_PostResources_Posts");
+		});
         OnModelCreatingPartial(modelBuilder);
     }
 

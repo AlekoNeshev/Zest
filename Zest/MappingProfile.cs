@@ -33,6 +33,7 @@ namespace Zest
 			CreateMap<Message, MessageViewModel>()
 			   .ForMember(dest => dest.SenderUsername, op => op.MapFrom(src => src.Sender.Username))
 			   .ForMember(dest => dest.Text, op => op.MapFrom(src => src.Text));
+            CreateMap<PostResources, PostRescourcesViewModel>();
 		}
 
     }
