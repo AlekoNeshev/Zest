@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using Zest.DBModels;
 using Zest.DBModels.Models;
 using Zest.Hubs;
@@ -65,7 +66,7 @@ namespace Zest.Controllers
         [HttpGet]
         public async Task<ActionResult<CommentViewModel[]>> GetCommentsByPost(int postId)
         {
-            return mapper.Map<CommentViewModel[]>(context.Comments.Where(x => x.PostId == postId).ToArray());
+            return mapper.Map<CommentViewModel[]>(context.Comments.Include(x => x.Replies).ThenInclude(x => x.Replies).Where(x => x.PostId == postId && x.CommentId == null).ToArray());
         }
     }
 }
