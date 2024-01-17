@@ -226,7 +226,7 @@ public partial class ZestContext : DbContext
 
 			entity.HasOne(d => d.Post).WithMany(p => p.PostResources)
 			   .HasForeignKey(d => d.PostId)
-			   .OnDelete(DeleteBehavior.ClientSetNull)
+			   .OnDelete(DeleteBehavior.Cascade)
 			   .HasConstraintName("FK_PostResources_Posts");
 		});
         OnModelCreatingPartial(modelBuilder);

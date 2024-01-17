@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 using Zest.DBModels;
 using Zest.DBModels.Models;
 using Zest.ViewModels.ViewModels;
@@ -30,7 +31,7 @@ namespace Zest.Controllers
         [HttpPost]
         public async Task<ActionResult> Add(string title,[FromBody] string text, int publisherId, int communityId)
         {
-            context.Add(new  Post 
+            var post = context.Add(new  Post 
             { 
                 Title = title, 
                 Text = text,
@@ -38,9 +39,10 @@ namespace Zest.Controllers
                 CommunityId = communityId,
                 CreatedOn = DateTime.Now,
             });
-            context.SaveChanges();
-            return Ok();
-        }
+			await context.SaveChangesAsync();
+            var postId = post.Property<int>("Id").CurrentValue;
+			return Ok(postId);
+		}
 		[Route("remove/{postId}")]
 		[HttpDelete]
 		public async Task<ActionResult> Remove(int postId)
