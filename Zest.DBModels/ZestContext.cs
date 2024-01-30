@@ -223,6 +223,7 @@ public partial class ZestContext : DbContext
             entity.Property(e => e.CreatedOn).HasColumnType("datetime");
             entity.Property(e => e.Type).HasMaxLength(10).IsUnicode(false);
             entity.Property(e => e.Path).IsUnicode(false);
+            entity.Property(e => e.Name).IsUnicode(false);
 
 			entity.HasOne(d => d.Post).WithMany(p => p.PostResources)
 			   .HasForeignKey(d => d.PostId)
