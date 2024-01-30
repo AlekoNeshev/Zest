@@ -74,7 +74,7 @@ namespace Zest.Controllers
 				{
 					await postedFile.CopyToAsync(fileStream);
 				}
-				context.Add(new PostResources { Type = GetMimeTypeByWindowsRegistry(postedFile.FileName).Split("/").ToArray()[0], Path = filePath, CreatedOn = DateTime.Now, PostId = postId });
+				context.Add(new PostResources { Name = $"{un}{postedFileExtension}", Type = GetMimeTypeByWindowsRegistry(postedFile.FileName).Split("/").ToArray()[0].Trim(), Path = filePath, CreatedOn = DateTime.Now, PostId = postId });
 				await context.SaveChangesAsync();
 			}
 
@@ -96,6 +96,22 @@ namespace Zest.Controllers
 			if (regKey != null && regKey.GetValue("Content Type") != null) mimeType = regKey.GetValue("Content Type").ToString();
 			return mimeType;
 		}
-
+		[HttpGet("getByPostId/{postId}")]
+		public async Task<PostRescourcesViewModel[]> GetPhotos(int postId)
+		{
+			List<PostRescourcesViewModel> fileResults = new List<PostRescourcesViewModel>();
+			var uploads = (context.PostResources.Where(x => x.PostId == postId).ToArray());
+			foreach (var x in uploads)
+			{
+				PostRescourcesViewModel postRescourcesViewModel = new PostRescourcesViewModel();
+				fileResults.Add(new PostRescourcesViewModel()
+				{
+					Id = x.PostId,
+					Type = x.Type,
+					Source = "https://localhost:7183/api/PostRescources/ivan/"+x.Name
+				});
+			}
+			return fileResults.ToArray();
+		}
 	}
 }

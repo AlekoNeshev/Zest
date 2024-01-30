@@ -14,6 +14,7 @@ namespace Zest.ViewModels.ViewModels
         public string Publisher { get; set; }
         public int Likes { get; set; }
         public int Dislikes { get; set; }
+        public string ?ResourceType { get; set; } 
         public DateTime PostedOn { get; set; }
     }
 }
