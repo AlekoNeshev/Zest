@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 using Zest.DBModels;
 using Zest.DBModels.Models;
 using Zest.ViewModels.ViewModels;
@@ -29,24 +30,25 @@ namespace Zest.Controllers
         {
             return mapper.Map<AccountViewModel>(zestContext.Accounts.Where(x=>x.Email ==email && x.Password==password).FirstOrDefault());
         }
-        [Route("add/{firstName}/{lastName}/{email}/{birthdate}")]
+        [Route("add")]
         [HttpPost]
-        public async Task<ActionResult> Add(string firstName, string lastName, string username, string email,[FromBody] string password, DateTime birthdate)
+        public async Task<ActionResult> Add([FromBody] NewAccountViewModel account)
         {
-            zestContext.Add(new Account
+            var newAccount = zestContext.Add(new Account
             {
-                FirstName = firstName,
-                LastName = lastName,
-                Username = username,
-                Email = email,
-                Password = password,
-                Birthdate = birthdate,
-                CreatedOn = DateTime.Now,
+                FirstName = account.FirstName,
+                LastName = account.LastName,
+                Username = account.Username,
+                Email = account.Email,
+                Password = account.Password,
+                Birthdate = account.Birthdate,
+                CreatedOn = account.CreatedOn1,
                 IsAdmin = false
 
             }) ;
             zestContext.SaveChanges();
-            return Ok();
+			var accountId = newAccount.Property<int>("Id").CurrentValue;
+			return Ok(accountId);
         }
 
     }
