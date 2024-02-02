@@ -71,5 +71,11 @@ namespace Zest.Controllers
         {
             return mapper.Map<PostViewModel[]>(context.Posts.Where(x=>x.CommunityId==communityId).OrderByDescending(x => x.CreatedOn).ToArray());
         }
+        [Route("getBySearch/{search}")]
+        [HttpGet]
+        public async Task<ActionResult<PostViewModel[]>> GetBySearch(string search)
+        {
+			return mapper.Map<PostViewModel[]>(context.Posts.OrderByDescending(x=>x.Title.Contains(search)).ThenByDescending(x=>x.Text.Contains(search)).ToArray());
+		}
     }
 }
