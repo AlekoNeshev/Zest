@@ -14,6 +14,7 @@ public partial class Post
     public int AccountId { get; set; }
 
     public int CommunityId { get; set; }
+    public bool? IsDeleted { get; set; }
 
     public DateTime CreatedOn { get; set; }
 

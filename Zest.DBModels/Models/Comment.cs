@@ -14,6 +14,7 @@ public partial class Comment
     public int PostId { get; set; }
 
     public int? CommentId { get; set; }
+    public bool? IsDeleted { get; set; }
 
     public DateTime CreatedOn { get; set; }
 

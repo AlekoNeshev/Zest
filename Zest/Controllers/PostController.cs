@@ -44,15 +44,17 @@ namespace Zest.Controllers
 			return Ok(postId);
 		}
 		[Route("remove/{postId}")]
-		[HttpDelete]
+		[HttpPut]
 		public async Task<ActionResult> Remove(int postId)
 		{
 			Post post = context.Posts.Find(postId);
+           
             if (post == null)
             {
                 return BadRequest();
             }
-            context.Posts.Remove(post);
+			post.IsDeleted = true;
+			context.Posts.Update(post);
 			context.SaveChanges();
 			return Ok();
 		}
@@ -60,7 +62,8 @@ namespace Zest.Controllers
         [HttpGet]
         public async Task<ActionResult<PostViewModel[]>> GetByDate()
         {
-            return mapper.Map<PostViewModel[]>(context.Posts.OrderByDescending(x => x.CreatedOn).ToArray());
+          
+			return mapper.Map<PostViewModel[]>(context.Posts.OrderByDescending(x => x.CreatedOn).ToArray());
         }
         [Route("getByCommunity/{communityId}")]
         [HttpGet]
