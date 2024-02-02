@@ -50,15 +50,19 @@ namespace Zest.Controllers
         }
 
         [Route("remove/{commentId}")]
-        [HttpDelete]
+        [HttpPut]
         public async Task<ActionResult> Remove(int commentId)
         {
             Comment comment = new Comment();
 
             comment = context.Comments.FirstOrDefault(c => c.Id == commentId);
-
-            context.Remove(comment);
-            context.SaveChanges();
+            if (comment == null)
+            {
+                return BadRequest();
+            }
+            comment.IsDeleted = true;
+            context.Update(comment);
+            await context.SaveChangesAsync();
             await hubContext.Clients.All.SendAsync("CommentPosted");
             return Ok();
         }
