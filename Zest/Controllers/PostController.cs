@@ -75,7 +75,7 @@ namespace Zest.Controllers
         [HttpGet]
         public async Task<ActionResult<PostViewModel[]>> GetBySearch(string search)
         {
-			return mapper.Map<PostViewModel[]>(context.Posts.OrderByDescending(x=>x.Title.Contains(search)).ThenByDescending(x=>x.Text.Contains(search)).ToArray());
+			return mapper.Map<PostViewModel[]>(context.Posts.OrderByDescending(x=>x.Title.Contains(search)).ThenByDescending(x=>x.Text.Contains(search)).ThenByDescending(x=>x.CreatedOn).ToArray());
 		}
     }
 }
