@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Zest.DBModels;
 using Zest.DBModels.Models;
+using Zest.Services;
 using Zest.ViewModels.ViewModels;
 
 namespace Zest.Controllers
@@ -14,10 +16,12 @@ namespace Zest.Controllers
     {
         private ZestContext context;
         private IMapper mapper;
-        public PostController(ZestContext context, IMapper mapper)
+        private LikesHubConnectionService connectionService;
+        public PostController(ZestContext context, IMapper mapper, LikesHubConnectionService likesHubConnectionService)
         {
             this.context = context;
             this.mapper = mapper;
+            this.connectionService = likesHubConnectionService;
         }
         [Route("{id}")]
         [HttpGet]
@@ -58,11 +62,12 @@ namespace Zest.Controllers
 			context.SaveChanges();
 			return Ok();
 		}
-		[Route("getByDate")]
+        [Route("getByDate/{lastDate}/{minimumSkipCount}/{takeCount}")]
         [HttpGet]
-        public async Task<ActionResult<PostViewModel[]>> GetByDate()
+        public async Task<ActionResult<PostViewModel[]>> GetByDate([FromRoute] DateTime lastDate, int minimumSkipCount,int takeCount)
         {
-          
+            var query = context.Posts.OrderByDescending(p => p.CreatedOn).Skip(minimumSkipCount).Where(x=>x.CreatedOn < lastDate).Take(takeCount).ToArray();
+           
 			return mapper.Map<PostViewModel[]>(context.Posts.OrderByDescending(x => x.CreatedOn).ToArray());
         }
         [Route("getByCommunity/{communityId}")]

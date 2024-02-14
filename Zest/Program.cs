@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Zest.DBModels;
 using Zest.Hubs;
+using Zest.Services;
 
 namespace Zest
 {
@@ -14,8 +15,11 @@ namespace Zest
             // Add services to the container.
 
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSingleton<UserConnectionService>();
+			builder.Services.AddSingleton<LikesHubConnectionService>();
+            
+			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+			builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddSignalR();
             builder.Services.AddAutoMapper(bl =>
