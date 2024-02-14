@@ -50,7 +50,7 @@ namespace Zest.Controllers
 			var accountId = newAccount.Property<int>("Id").CurrentValue;
 			return Ok(accountId);
         }
-		[Route("{getAll}")]
+		[Route("getAll")]
 		[HttpGet]
 		public async Task<ActionResult<AccountViewModel[]>> GetAll()
 		{
