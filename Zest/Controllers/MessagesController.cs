@@ -39,7 +39,7 @@ namespace Zest.Controllers
         {
             context.Add(new Message { SenderId = senderId, ReceiverId = receiverId, Text = text, CreatedOn = DateTime.Now });
             context.SaveChanges();
-			await hubContext.Clients.All.SendAsync("MessageSent");
+            await hubContext.Clients.Groups($"chat-{senderId}{receiverId}").SendAsync("MessageSent");
 			return Ok();
         }
         [Route("remove/{senderId}/receiver/{receiverId}")]

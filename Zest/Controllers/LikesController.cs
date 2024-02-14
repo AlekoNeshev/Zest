@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 using Zest.DBModels;
 using Zest.DBModels.Models;
 using Zest.Hubs;
+using Zest.Services;
 
 namespace Zest.Controllers
 {
@@ -13,10 +14,14 @@ namespace Zest.Controllers
     {
         private ZestContext context;
         private IHubContext<LikesHub> _LikesHubCont;
-        public LikesController(ZestContext context, IHubContext<LikesHub> lhc)
+        private UserConnectionService _UserConnectionService;
+		private LikesHubConnectionService likesHubConnectionService;
+		public LikesController(ZestContext context, IHubContext<LikesHub> lhc, UserConnectionService userConnectionService, LikesHubConnectionService likesHubConnectionService)
         {
             this.context = context;
             this._LikesHubCont = lhc;
+            this._UserConnectionService = userConnectionService;
+            this.likesHubConnectionService = likesHubConnectionService;
         }
         [Route("add/{likerId}/post/{postId}/comment/{commentId}/value/{value}")]
         [HttpPost]
@@ -45,11 +50,12 @@ namespace Zest.Controllers
                 });
             }
             context.SaveChanges();
-            if(postId != 0)
-            await _LikesHubCont.Clients.All.SendAsync("SignalLike", postId);
-            else if(commentId != 0)
+            if (postId != 0)
+                await _LikesHubCont.Clients.Groups(postId.ToString()).SendAsync("PostLiked", postId);
+            else if (commentId != 0)
             {
-                await _LikesHubCont.Clients.All.SendAsync("CommentLiked", commentId);
+                //  await _UserConnectionService.SendNotificationToUser(likerId.ToString(), commentId);
+                await likesHubConnectionService.SendNotificationToUser(likerId.ToString(), commentId.ToString());
             }
             return Ok();
         }
