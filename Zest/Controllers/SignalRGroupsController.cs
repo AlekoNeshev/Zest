@@ -11,11 +11,14 @@ namespace Zest.Controllers
 	public class SignalRGroupsController : ControllerBase
 	{
         private readonly IHubContext<LikesHub> _likesHubContext;
-		private readonly LikesHubConnectionService _likesHubConnectionService;
-        public SignalRGroupsController(IHubContext<LikesHub> likesHubContext, LikesHubConnectionService likesHubConnectionService)
-        {
+		private readonly IHubContext<MessageHub> _messageHubContext;
+		private readonly IHubContext<CommentsHub> _commentsHubContext;
+		public SignalRGroupsController(IHubContext<LikesHub> likesHubContext, IHubContext<MessageHub> messageHubContext, IHubContext<CommentsHub> commentsHubContext)
+
+		{
             this._likesHubContext = likesHubContext;
-			this._likesHubConnectionService = likesHubConnectionService;
+			this._messageHubContext = messageHubContext;
+			this._commentsHubContext = commentsHubContext;
         }
         [HttpPost]
 		[Route("addConnectionToGroup/{connectionId}")]
@@ -23,7 +26,18 @@ namespace Zest.Controllers
 		{
 			foreach (var item in groupsId)
 			{
-				await _likesHubContext.Groups.AddToGroupAsync(connectionId, item);
+				if (item.Contains("chat"))
+				{
+					await _messageHubContext.Groups.AddToGroupAsync(connectionId, item);
+				}
+				else if (item.Contains("comment"))
+				{
+					await _commentsHubContext.Groups.AddToGroupAsync(connectionId, item);
+				}
+				else
+				{
+					await _likesHubContext.Groups.AddToGroupAsync(connectionId, item);
+				}
 			}
 			return Ok();
 		
