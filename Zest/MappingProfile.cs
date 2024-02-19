@@ -21,6 +21,7 @@ namespace Zest
                {
                    if (src.IsDeleted == true)
                    {
+                       dest.Title = "Deleted";
                        dest.Text = "Deleted";
                        dest.Publisher = "Unknown";
                    }
