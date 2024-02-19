@@ -16,8 +16,8 @@ namespace Zest.Controllers
     {
         private ZestContext context;
         private IMapper mapper;
-        private LikesHubConnectionService connectionService;
-        public PostController(ZestContext context, IMapper mapper, LikesHubConnectionService likesHubConnectionService)
+        private SignaRGroupsPlaceholder connectionService;
+        public PostController(ZestContext context, IMapper mapper, SignaRGroupsPlaceholder likesHubConnectionService)
         {
             this.context = context;
             this.mapper = mapper;

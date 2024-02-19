@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using System.Text.RegularExpressions;
 using Zest.Hubs;
 using Zest.Services;
 
@@ -13,12 +14,14 @@ namespace Zest.Controllers
         private readonly IHubContext<LikesHub> _likesHubContext;
 		private readonly IHubContext<MessageHub> _messageHubContext;
 		private readonly IHubContext<CommentsHub> _commentsHubContext;
-		public SignalRGroupsController(IHubContext<LikesHub> likesHubContext, IHubContext<MessageHub> messageHubContext, IHubContext<CommentsHub> commentsHubContext)
+		private readonly SignaRGroupsPlaceholder _signaRGroupsPlaceholder;
+		public SignalRGroupsController(IHubContext<LikesHub> likesHubContext, IHubContext<MessageHub> messageHubContext, IHubContext<CommentsHub> commentsHubContext, SignaRGroupsPlaceholder signaRGroupsPlaceholder)
 
 		{
             this._likesHubContext = likesHubContext;
 			this._messageHubContext = messageHubContext;
 			this._commentsHubContext = commentsHubContext;
+			this._signaRGroupsPlaceholder = signaRGroupsPlaceholder;
         }
         [HttpPost]
 		[Route("addConnectionToGroup/{connectionId}")]
@@ -33,14 +36,29 @@ namespace Zest.Controllers
 				else if (item.Contains("comment"))
 				{
 					await _commentsHubContext.Groups.AddToGroupAsync(connectionId, item);
+					
 				}
 				else
 				{
 					await _likesHubContext.Groups.AddToGroupAsync(connectionId, item);
 				}
+				await _signaRGroupsPlaceholder.AddUserToGroup(connectionId, item);
 			}
 			return Ok();
 		
+		}
+		[HttpPost]
+		[Route("removeConnectionToGroup/{connectionId}")]
+		public async Task<ActionResult> RemoveConnectionFromAllGroups(string connectionId)
+		{
+			var groups = await _signaRGroupsPlaceholder.RetrieveGroups(connectionId);
+			foreach (var group in groups)
+			{
+				await _likesHubContext.Groups.RemoveFromGroupAsync(connectionId, group);
+				await _messageHubContext.Groups.RemoveFromGroupAsync(connectionId, group);
+				await _commentsHubContext.Groups.RemoveFromGroupAsync(connectionId, group);
+			}
+			return Ok();
 		}
 
 	}

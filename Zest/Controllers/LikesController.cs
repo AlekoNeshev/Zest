@@ -15,8 +15,8 @@ namespace Zest.Controllers
         private ZestContext context;
         private IHubContext<LikesHub> _LikesHubCont;
         private UserConnectionService _UserConnectionService;
-		private LikesHubConnectionService likesHubConnectionService;
-		public LikesController(ZestContext context, IHubContext<LikesHub> lhc, UserConnectionService userConnectionService, LikesHubConnectionService likesHubConnectionService)
+		private SignaRGroupsPlaceholder likesHubConnectionService;
+		public LikesController(ZestContext context, IHubContext<LikesHub> lhc, UserConnectionService userConnectionService, SignaRGroupsPlaceholder likesHubConnectionService)
         {
             this.context = context;
             this._LikesHubCont = lhc;
@@ -55,7 +55,7 @@ namespace Zest.Controllers
             else if (commentId != 0)
             {
                 //  await _UserConnectionService.SendNotificationToUser(likerId.ToString(), commentId);
-                await likesHubConnectionService.SendNotificationToUser(likerId.ToString(), commentId.ToString());
+               // await likesHubConnectionService.SendNotificationToUser(likerId.ToString(), commentId.ToString());
             }
             return Ok();
         }
