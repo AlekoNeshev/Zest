@@ -52,6 +52,7 @@ namespace Zest
 			   .ForMember(dest => dest.Text, op => op.MapFrom(src => src.Text));
             CreateMap<PostResources, PostRescourcesViewModel>()
                 .ForMember(dest => dest.Source, op => op.MapFrom(src => src.Path + " "));
+            CreateMap<Account, UserViewModel>();
 		}
 
     }

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Zest.DBModels;
 using Zest.DBModels.Models;
 using Zest.ViewModels.ViewModels;
@@ -36,7 +37,8 @@ namespace Zest.Controllers
 		[HttpDelete]
 		public async Task<ActionResult> Delete(int followerId, int followedId)
 		{
-			context.Add(new Follower { FollowerId = followerId, FollowedId = followedId, CreatedOn = DateTime.Now });
+			var followship = context.Followers.Where(x=>x.FollowerId==followerId && x.FollowedId==followedId).FirstOrDefault();
+            context.Remove(followship);
 			context.SaveChanges();
 			return Ok();
 		}

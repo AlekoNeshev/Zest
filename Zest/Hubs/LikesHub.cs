@@ -7,8 +7,8 @@ namespace Zest.Hubs;
 public class LikesHub : Hub
 {
 	private readonly UserConnectionService _notificationService;
-	private readonly LikesHubConnectionService _likesConnectionService;
-	public LikesHub(UserConnectionService notificationService,LikesHubConnectionService likesHubConnectionService)
+	private readonly SignaRGroupsPlaceholder _likesConnectionService;
+	public LikesHub(UserConnectionService notificationService,SignaRGroupsPlaceholder likesHubConnectionService)
 	{
 		_notificationService = notificationService;
 		_likesConnectionService = likesHubConnectionService;

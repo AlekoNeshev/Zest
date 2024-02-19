@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Identity.Client;
 using Zest.DBModels;
 using Zest.DBModels.Models;
 using Zest.ViewModels.ViewModels;
@@ -50,11 +51,16 @@ namespace Zest.Controllers
 			var accountId = newAccount.Property<int>("Id").CurrentValue;
 			return Ok(accountId);
         }
-		[Route("getAll")]
+		[Route("getAll/{accountId}")]
 		[HttpGet]
-		public async Task<ActionResult<AccountViewModel[]>> GetAll()
+		public async Task<ActionResult<UserViewModel[]>> GetAll(int accountId)
 		{
-			return mapper.Map<AccountViewModel[]>(zestContext.Accounts.ToArray());
+			UserViewModel[] userViewModels = mapper.Map<UserViewModel[]>(zestContext.Accounts.ToArray());
+			foreach (var item in userViewModels)
+			{
+				item.IsFollowed = zestContext.Followers.Where(x => x.FollowerId == accountId && x.FollowedId == item.Id).FirstOrDefault() != null;
+			}
+            return userViewModels;
 		}
 	}
 }
