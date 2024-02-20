@@ -27,7 +27,7 @@ namespace Zest.Controllers
         [HttpPost]
         public async Task<ActionResult> Add(int likerId, int postId, int commentId, bool value)
         {
-            if (postId!=0)
+            if (postId!=0 && commentId == 0)
             {
                 context.Add(new Like
                 {
@@ -38,7 +38,7 @@ namespace Zest.Controllers
                     CreatedOn = DateTime.Now
                 });
             }
-            else if(postId==0 && commentId !=0) 
+            else if(commentId !=0) 
             {
                 context.Add(new Like
                 {
@@ -50,13 +50,13 @@ namespace Zest.Controllers
                 });
             }
             context.SaveChanges();
-            if (postId != 0)
+            if (commentId == 0)
                 await _LikesHubCont.Clients.Groups(postId.ToString()).SendAsync("PostLiked", postId);
             else if (commentId != 0)
             {
-                //  await _UserConnectionService.SendNotificationToUser(likerId.ToString(), commentId);
-               // await likesHubConnectionService.SendNotificationToUser(likerId.ToString(), commentId.ToString());
-            }
+				await _LikesHubCont.Clients.Groups(("pd-"+postId.ToString())).SendAsync("CommentLiked", commentId);
+				
+			}
             return Ok();
         }
         [Route("remove/{likerId}/post/{postId}/comment/{commentId}")]

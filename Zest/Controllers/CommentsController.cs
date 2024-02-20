@@ -45,7 +45,7 @@ namespace Zest.Controllers
                 context.Add(new Comment { AccountId = accountId, PostId = postId, CommentId = commentId, Text = text, CreatedOn = DateTime.Now });
             }
             context.SaveChanges();
-            await hubContext.Clients.All.SendAsync("CommentPosted");
+            await hubContext.Clients.Group("message-" + postId.ToString()).SendAsync("CommentPosted");
             return Ok();
         }
 
