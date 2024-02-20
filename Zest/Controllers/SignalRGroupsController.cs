@@ -31,12 +31,17 @@ namespace Zest.Controllers
 			{
 				if (item.Contains("chat"))
 				{
+					
 					await _messageHubContext.Groups.AddToGroupAsync(connectionId, item);
 				}
-				else if (item.Contains("comment"))
+				else if (item.Contains("message"))
 				{
 					await _commentsHubContext.Groups.AddToGroupAsync(connectionId, item);
 					
+				}
+				else if (item.Contains("pd"))
+				{
+					await _likesHubContext.Groups.AddToGroupAsync(connectionId, item);
 				}
 				else
 				{

@@ -66,21 +66,34 @@ namespace Zest.Controllers
         [HttpGet]
         public async Task<ActionResult<PostViewModel[]>> GetByDate(int accountId, [FromRoute] DateTime lastDate, int minimumSkipCount,int takeCount)
         {
-            var query = context.Posts.OrderByDescending(p => p.CreatedOn).Skip(minimumSkipCount).Where(x=>x.CreatedOn < lastDate).Take(takeCount).ToArray();
-           
-			return mapper.Map<PostViewModel[]>(context.Posts.OrderByDescending(x => x.CreatedOn).ToArray());
+            var posts = mapper.Map<PostViewModel[]>( context.Posts.OrderByDescending(p => p.CreatedOn).Skip(minimumSkipCount).Where(x=>x.CreatedOn < lastDate).Take(takeCount).ToArray());
+			foreach (var item in posts)
+			{
+				item.IsOwner = context.Posts.Where(x => x.Id == item.Id && x.AccountId == accountId).FirstOrDefault() != null;
+			}
+            return posts;
         }
         [Route("getByCommunity/{accountId}/{communityId}")]
         [HttpGet]
         public async Task<ActionResult<PostViewModel[]>> GetByCommunity(int accountId, int communityId)
         {
-            return mapper.Map<PostViewModel[]>(context.Posts.Where(x=>x.CommunityId==communityId).OrderByDescending(x => x.CreatedOn).ToArray());
+            var posts = mapper.Map<PostViewModel[]>(context.Posts.Where(x => x.CommunityId==communityId).OrderByDescending(x => x.CreatedOn).ToArray());
+            foreach (var item in posts)
+            {
+                item.IsOwner = context.Posts.Where(x => x.Id == item.Id && x.AccountId == accountId).FirstOrDefault() != null;
+			}
+            return posts;
         }
         [Route("getBySearch/{accountId}/{search}")]
         [HttpGet]
         public async Task<ActionResult<PostViewModel[]>> GetBySearch(int accountId, string search)
         {
-			return mapper.Map<PostViewModel[]>(context.Posts.OrderByDescending(x=>x.Title.Contains(search)).ThenByDescending(x=>x.Text.Contains(search)).ThenByDescending(x=>x.CreatedOn).ToArray());
+            var posts = mapper.Map<PostViewModel[]>(context.Posts.OrderByDescending(x => x.Title.Contains(search)).ThenByDescending(x => x.Text.Contains(search)).ThenByDescending(x => x.CreatedOn).ToArray());
+			foreach (var item in posts)
+			{
+				item.IsOwner = context.Posts.Where(x => x.Id == item.Id && x.AccountId == accountId).FirstOrDefault() != null;
+			}
+            return posts;
 		}
     }
 }

@@ -12,7 +12,7 @@ namespace Zest.ViewModels.ViewModels
         public string Title { get; set; }
         public string Text { get; set; }
         public string Publisher { get; set; }
-        public bool IsPublisher { get; set; }
+        public bool IsOwner { get; set; }
         public int Likes { get; set; }
         public int Dislikes { get; set; }
         public string ?ResourceType { get; set; } 

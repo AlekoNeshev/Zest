@@ -15,7 +15,6 @@ namespace Zest
                 .ForMember(dest => dest.PostedOn, op => op.MapFrom(src => src.CreatedOn))
                 .ForMember(dest => dest.Likes, op => op.MapFrom(src => src.Likes.Where(x => x.Value == true).Count()))
                 .ForMember(dest => dest.Dislikes, op => op.MapFrom(src => src.Likes.Where(x => x.Value == false).Count()))
-                .ForMember(dest => dest.PublisherId, op => op.MapFrom(src => src.AccountId))
                 .ForMember(dest => dest.ResourceType, op => op.MapFrom(src => src.PostResources.FirstOrDefault().Type))
                .AfterMap((src, dest) =>
                {
