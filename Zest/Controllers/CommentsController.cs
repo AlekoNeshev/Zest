@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 using Zest.DBModels;
 using Zest.DBModels.Models;
 using Zest.Hubs;
@@ -35,18 +36,25 @@ namespace Zest.Controllers
         [HttpPost]
         public async Task<ActionResult> Add(int accountId, int postId, [FromBody] string text, int commentId = 0)
         {
+           
             if (postId!=0 && commentId == 0)
             {
-                context.Add(new Comment { AccountId = accountId, PostId = postId, Text = text, CreatedOn = DateTime.Now });
-            }
+				var comment = await context.AddAsync(new Comment { AccountId = accountId, PostId = postId, Text = text, CreatedOn = DateTime.Now });
+				context.SaveChanges();
+				var returnId = comment.Property<int>("Id").CurrentValue;
+                return Ok(returnId);
+			}
 
             else if (postId!=0 && commentId != 0)
             {
-                context.Add(new Comment { AccountId = accountId, PostId = postId, CommentId = commentId, Text = text, CreatedOn = DateTime.Now });
-            }
-            context.SaveChanges();
-            await hubContext.Clients.Group("message-" + postId.ToString()).SendAsync("CommentPosted");
-            return Ok();
+				var comment = await context.AddAsync(new Comment { AccountId = accountId, PostId = postId, CommentId = commentId, Text = text, CreatedOn = DateTime.Now });
+				context.SaveChanges();
+				var returnId =new int[] { comment.Property<int>("Id").CurrentValue, (int)comment.Property<int?>("CommentId").CurrentValue };
+                return Ok(returnId);
+			}
+            
+            //await hubContext.Clients.Group("message-" + postId.ToString()).SendAsync("CommentPosted");
+            return BadRequest();
         }
 
         [Route("remove/{commentId}")]
@@ -63,14 +71,17 @@ namespace Zest.Controllers
             comment.IsDeleted = true;
             context.Update(comment);
             await context.SaveChangesAsync();
-            await hubContext.Clients.All.SendAsync("CommentPosted");
-            return Ok();
+           // await hubContext.Clients.All.SendAsync("CommentPosted");
+            return Ok(commentId);
         }
-        [Route("getCommentsByPost/{postId}")]
+        [Route("getCommentsByPost/{accountId}/{postId}")]
         [HttpGet]
-        public async Task<ActionResult<CommentViewModel[]>> GetCommentsByPost(int postId)
+        public async Task<ActionResult<CommentViewModel[]>> GetCommentsByPost(int accountId, int postId)
         {
-            return mapper.Map<CommentViewModel[]>(context.Comments.Include(x => x.Replies).ThenInclude(x => x.Replies).Where(x => x.PostId == postId && x.CommentId == null).ToArray());
+            var comments = mapper.Map<CommentViewModel[]>(context.Comments.Include(x => x.Replies).ThenInclude(x => x.Replies).Where(x => x.PostId == postId && x.CommentId == null).ToArray());
+          
+			
+			return comments;
         }
     }
 }
