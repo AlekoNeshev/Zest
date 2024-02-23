@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Hosting;
 using Zest.DBModels;
 using Zest.DBModels.Models;
 using Zest.Hubs;
@@ -37,12 +38,14 @@ namespace Zest.Controllers
         [HttpPost]
         public async Task<ActionResult> Add(int senderId, int receiverId,[FromBody] string text)
         {
-            context.Add(new Message { SenderId = senderId, ReceiverId = receiverId, Text = text, CreatedOn = DateTime.Now });
+            var message = context.Add(new Message { SenderId = senderId, ReceiverId = receiverId, Text = text, CreatedOn = DateTime.Now });
+
             context.SaveChanges();
 			int firstHubId = Math.Max(senderId, receiverId);
 			int secondHubId = Math.Min(senderId, receiverId);
 			await hubContext.Clients.Groups($"chat-{firstHubId}{secondHubId}").SendAsync("MessageSent");
-			return Ok();
+			var messageId = message.Property<int>("Id").CurrentValue;
+			return Ok(messageId);
         }
         [Route("remove/{senderId}/receiver/{receiverId}")]
         [HttpDelete]
