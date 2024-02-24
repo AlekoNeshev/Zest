@@ -23,6 +23,12 @@ namespace Zest.Controllers
             this.mapper=mapper;
             this.hubContext=hubContext;
         }
+        [Route("get/{id}")]
+        [HttpGet]
+        public async Task<ActionResult<MessageViewModel>> Find(int id)
+        {
+            return mapper.Map<MessageViewModel>(context.Messages.Find(id));
+        }
         [Route("get/{senderId}/receiver/{receiverId}")]
         [HttpGet]
 		public async Task<ActionResult<MessageViewModel[]>> Add(int senderId, int receiverId)
@@ -43,8 +49,9 @@ namespace Zest.Controllers
             context.SaveChanges();
 			int firstHubId = Math.Max(senderId, receiverId);
 			int secondHubId = Math.Min(senderId, receiverId);
-			await hubContext.Clients.Groups($"chat-{firstHubId}{secondHubId}").SendAsync("MessageSent");
 			var messageId = message.Property<int>("Id").CurrentValue;
+			await hubContext.Clients.Groups($"chat-{firstHubId}{secondHubId}").SendAsync("MessageSent", messageId);
+			
 			return Ok(messageId);
         }
         [Route("remove/{senderId}/receiver/{receiverId}")]
