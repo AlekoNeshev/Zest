@@ -38,9 +38,9 @@ namespace Zest.Controllers
         }
         [Route("add/{name}/creator/{creatorId}")]
         [HttpPost]
-        public async Task<ActionResult> Add(string name, [FromBody] string discription, int creatorId)
+        public async Task<ActionResult> Add(string name, int creatorId, [FromBody] string discription)
         {
-            context.Add(new Community
+           var community =  context.Add(new Community
             {
                 Name = name,
                 Information = discription,
@@ -48,7 +48,8 @@ namespace Zest.Controllers
                 CreatedOn = DateTime.Now,
             });
             context.SaveChanges();
-            return Ok();
+			var communityId = community.Property<int>("Id").CurrentValue;
+			return Ok(communityId);
         }
     }
 }
