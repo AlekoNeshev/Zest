@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -62,9 +63,11 @@ namespace Zest.Controllers
 			context.SaveChanges();
 			return Ok();
 		}
+        
         [Route("getByDate/{accountId}/{lastDate}/{minimumSkipCount}/{takeCount}")]
         [HttpGet]
-        public async Task<ActionResult<PostViewModel[]>> GetByDate(int accountId, [FromRoute] DateTime lastDate, int minimumSkipCount,int takeCount)
+		[Authorize]
+		public async Task<ActionResult<PostViewModel[]>> GetByDate(int accountId, [FromRoute] DateTime lastDate, int minimumSkipCount,int takeCount)
         {
             var posts = mapper.Map<PostViewModel[]>( context.Posts.OrderByDescending(p => p.CreatedOn).Skip(minimumSkipCount).Where(x=>x.CreatedOn < lastDate).Take(takeCount).ToArray());
 			foreach (var item in posts)
