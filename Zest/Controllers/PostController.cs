@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
+using System.Security.Claims;
 using Zest.DBModels;
 using Zest.DBModels.Models;
 using Zest.Services;
@@ -11,7 +12,8 @@ using Zest.ViewModels.ViewModels;
 
 namespace Zest.Controllers
 {
-    [Route("api/[controller]")]
+	[Authorize]
+	[Route("api/[controller]")]
     [ApiController]
     public class PostController : ControllerBase
     {
@@ -24,6 +26,7 @@ namespace Zest.Controllers
             this.mapper = mapper;
             this.connectionService = likesHubConnectionService;
         }
+
         [Route("{id}")]
         [HttpGet]
         public async Task<ActionResult<PostViewModel>> Find(int id)
@@ -31,12 +34,13 @@ namespace Zest.Controllers
            // Console.WriteLine(context.Posts.Find(id).Account.Username);
             return mapper.Map<PostViewModel>(context.Posts.Find(id));
         }
-
-        [Route("add/{title}/account/{publisherId}/community/{communityId}")]
+		[Route("add/{title}/community/{communityId}")]
         [HttpPost]
-        public async Task<ActionResult> Add(string title,[FromBody] string text, int publisherId, int communityId)
+        public async Task<ActionResult> Add(string title,[FromBody] string text, int communityId)
         {
-            var post = context.Add(new  Post 
+			var user = User.Claims;
+			var publisherId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var post = context.Add(new  Post 
             { 
                 Title = title, 
                 Text = text,
@@ -64,34 +68,40 @@ namespace Zest.Controllers
 			return Ok();
 		}
         
-        [Route("getByDate/{accountId}/{lastDate}/{minimumSkipCount}/{takeCount}")]
+        [Route("getByDate/{lastDate}/{minimumSkipCount}/{takeCount}")]
         [HttpGet]
-		[Authorize]
-		public async Task<ActionResult<PostViewModel[]>> GetByDate(int accountId, [FromRoute] DateTime lastDate, int minimumSkipCount,int takeCount)
+		public async Task<ActionResult<PostViewModel[]>> GetByDate([FromRoute] DateTime lastDate, int minimumSkipCount,int takeCount)
         {
-            var posts = mapper.Map<PostViewModel[]>( context.Posts.OrderByDescending(p => p.CreatedOn).Skip(minimumSkipCount).Where(x=>x.CreatedOn < lastDate).Take(takeCount).ToArray());
+			var user = User.Claims;
+			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+			var posts = mapper.Map<PostViewModel[]>( context.Posts.OrderByDescending(p => p.CreatedOn).Skip(minimumSkipCount).Where(x=>x.CreatedOn < lastDate).Take(takeCount).ToArray());
 			foreach (var item in posts)
 			{
 				item.IsOwner = context.Posts.Where(x => x.Id == item.Id && x.AccountId == accountId).FirstOrDefault() != null;
 			}
             return posts;
         }
-        [Route("getByCommunity/{accountId}/{communityId}")]
+        [Route("getByCommunity/{communityId}")]
         [HttpGet]
-        public async Task<ActionResult<PostViewModel[]>> GetByCommunity(int accountId, int communityId)
+        public async Task<ActionResult<PostViewModel[]>> GetByCommunity(int communityId)
         {
-            var posts = mapper.Map<PostViewModel[]>(context.Posts.Where(x => x.CommunityId==communityId).OrderByDescending(x => x.CreatedOn).ToArray());
+			var user = User.Claims;
+			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var posts = mapper.Map<PostViewModel[]>(context.Posts.Where(x => x.CommunityId==communityId).OrderByDescending(x => x.CreatedOn).ToArray());
             foreach (var item in posts)
             {
                 item.IsOwner = context.Posts.Where(x => x.Id == item.Id && x.AccountId == accountId).FirstOrDefault() != null;
 			}
             return posts;
         }
-        [Route("getBySearch/{accountId}/{search}")]
+        [Route("getBySearch/{search}")]
         [HttpGet]
-        public async Task<ActionResult<PostViewModel[]>> GetBySearch(int accountId, string search)
+        public async Task<ActionResult<PostViewModel[]>> GetBySearch(string search)
         {
-            var posts = mapper.Map<PostViewModel[]>(context.Posts.OrderByDescending(x => x.Title.Contains(search)).ThenByDescending(x => x.Text.Contains(search)).ThenByDescending(x => x.CreatedOn).ToArray());
+			var user = User.Claims;
+			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var posts = mapper.Map<PostViewModel[]>(context.Posts.OrderByDescending(x => x.Title.Contains(search)).ThenByDescending(x => x.Text.Contains(search)).ThenByDescending(x => x.CreatedOn).ToArray());
 			foreach (var item in posts)
 			{
 				item.IsOwner = context.Posts.Where(x => x.Id == item.Id && x.AccountId == accountId).FirstOrDefault() != null;

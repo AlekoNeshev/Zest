@@ -9,7 +9,7 @@ public partial class Like
 
     public bool Value { get; set; }
 
-    public int AccountId { get; set; }
+    public string AccountId { get; set; }
 
     public int? PostId { get; set; }
 
