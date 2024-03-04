@@ -11,7 +11,7 @@ public partial class Post
 
     public string Text { get; set; } = null!;
 
-    public int AccountId { get; set; }
+    public string AccountId { get; set; }
 
     public int CommunityId { get; set; }
     public bool? IsDeleted { get; set; }

@@ -7,7 +7,7 @@ public partial class CommunityModerator
 {
     public int CommunityId { get; set; }
 
-    public int AccountId { get; set; }
+    public string AccountId { get; set; }
 
     public DateTime CreatedOn { get; set; }
 

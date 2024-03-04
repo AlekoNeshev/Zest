@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using System.Text.RegularExpressions;
@@ -23,9 +24,10 @@ namespace Zest.Controllers
 			this._commentsHubContext = commentsHubContext;
 			this._signaRGroupsPlaceholder = signaRGroupsPlaceholder;
         }
+		[Authorize]
         [HttpPost]
 		[Route("addConnectionToGroup/{connectionId}")]
-		public async Task<ActionResult> AddConnectionToGroup(string connectionId, [FromBody]string[] groupsId)
+		public async Task<ActionResult> AddConnectionToGroup(string connectionId, [FromBody]string[]? groupsId)
 		{
 			foreach (var item in groupsId)
 			{

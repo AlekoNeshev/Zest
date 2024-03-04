@@ -1,14 +1,17 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Identity.Client;
+using System.Security.Claims;
 using Zest.DBModels;
 using Zest.DBModels.Models;
 using Zest.ViewModels.ViewModels;
 
 namespace Zest.Controllers
 {
-    [Route("api/[controller]")]
+	[Authorize]
+	[Route("api/[controller]")]
     [ApiController]
     public class AccountController : ControllerBase
     {
@@ -19,42 +22,48 @@ namespace Zest.Controllers
             this.zestContext = zestContext;
             this.mapper = mapper;
         }
-        [Route("{id}")]
+ 
+        [Route("get")]
         [HttpGet]
-        public async Task<ActionResult<AccountViewModel>> Index(int id)
+        public async Task<ActionResult<AccountViewModel>> FindById()
         {
-            return mapper.Map<AccountViewModel>(zestContext.Accounts.Where(x => x.Id ==id).FirstOrDefault());
+            var id = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+			return mapper.Map<AccountViewModel>(zestContext.Accounts.Where(x => x.Id ==id).FirstOrDefault());
         }
-        [Route("email/{email}/password/{password}")]
-        [HttpGet]
-        public async Task<ActionResult<AccountViewModel>> FindByEmail(string email, string password)
-        {
-            return mapper.Map<AccountViewModel>(zestContext.Accounts.Where(x=>x.Email ==email && x.Password==password).FirstOrDefault());
-        }
-        [Route("add")]
+        /* [Route("email/{email}/password/{password}")]
+         [HttpGet]
+         public async Task<ActionResult<AccountViewModel>> FindByEmail(string email, string password)
+         {
+             return mapper.Map<AccountViewModel>(zestContext.Accounts.Where(x=>x.Email ==email && x.Password==password).FirstOrDefault());
+         }*/
+        [Route("add/{name}/{email}")]
         [HttpPost]
-        public async Task<ActionResult> Add([FromBody] NewAccountViewModel account)
+        public async Task<ActionResult> Add(string name, string email)
         {
-            var newAccount = zestContext.Add(new Account
-            {
-                FirstName = account.FirstName,
-                LastName = account.LastName,
-                Username = account.Username,
-                Email = account.Email,
-                Password = account.Password,
-                Birthdate = account.Birthdate,
-                CreatedOn = account.CreatedOn1,
-                IsAdmin = false
+            var user = User.Claims;
+            var p = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+           
+			var newAccount = zestContext.Add(new Account
+            {          
+                Id = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value,
+			    Username = name,
+			    Email = email,
+                CreatedOn = DateTime.Now,
+			    IsAdmin = false
 
             }) ;
             zestContext.SaveChanges();
-			var accountId = newAccount.Property<int>("Id").CurrentValue;
-			return Ok(accountId);
+			var accountId = newAccount.Property<string>("Id").CurrentValue;
+            var username = newAccount.Property<string>("Username").CurrentValue;
+			return Ok(new string []{ accountId, username});
         }
-		[Route("getAll/{accountId}")]
+		[Route("getAll")]
 		[HttpGet]
-		public async Task<ActionResult<UserViewModel[]>> GetAll(int accountId)
+		public async Task<ActionResult<UserViewModel[]>> GetAll()
 		{
+			var user = User.Claims;
+			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 			UserViewModel[] userViewModels = mapper.Map<UserViewModel[]>(zestContext.Accounts.ToArray());
 			foreach (var item in userViewModels)
 			{

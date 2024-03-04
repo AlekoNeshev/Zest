@@ -11,7 +11,7 @@ public partial class Community
 
     public string Information { get; set; } = null!;
 
-    public int CreatorId { get; set; }
+    public string CreatorId { get; set; }
 
     public DateTime CreatedOn { get; set; }
 

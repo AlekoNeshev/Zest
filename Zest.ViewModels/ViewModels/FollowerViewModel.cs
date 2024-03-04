@@ -8,7 +8,7 @@ namespace Zest.ViewModels.ViewModels
 {
 	public class FollowerViewModel
 	{
-        public int FollowerId { get; set; }
+        public string FollowerId { get; set; }
         public string FollowerUsername { get; set; }
     }
 }

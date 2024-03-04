@@ -43,19 +43,13 @@ public partial class ZestContext : DbContext
     {
         modelBuilder.Entity<Account>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedOnAdd();
-            entity.Property(e => e.Birthdate).HasColumnType("date");
+            entity.Property(e => e.Id);
+        
             entity.Property(e => e.CreatedOn).HasColumnType("datetime");
             entity.Property(e => e.Email)
                 .HasMaxLength(50)
                 .IsUnicode(false);
-            entity.Property(e => e.FirstName)
-                .HasMaxLength(50)
-                .IsUnicode(false);
-            entity.Property(e => e.LastName)
-                .HasMaxLength(50)
-                .IsUnicode(false);
-            entity.Property(e => e.Password).HasMaxLength(50);
+           
             entity.Property(e => e.Username)
                 .HasMaxLength(50)
                 .IsUnicode(false);

@@ -1,14 +1,17 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using System.Security.Claims;
 using Zest.DBModels;
 using Zest.DBModels.Models;
 using Zest.ViewModels.ViewModels;
 
 namespace Zest.Controllers
 {
-    [Route("api/[controller]")]
+	[Authorize]
+	[Route("api/[controller]")]
     [ApiController]
     public class CommunityController : ControllerBase
     {
@@ -25,22 +28,26 @@ namespace Zest.Controllers
         {
             return mapper.Map<CommunityViewModel>(context.Communities.Where(x => x.Id == id).FirstOrDefault());
         }
-        [Route("getAll/{accountId}")]
+        [Route("getAll")]
         [HttpGet]
-        public async Task<ActionResult<CommunityViewModel[]>> GetAll(int accountId)
+        public async Task<ActionResult<CommunityViewModel[]>> GetAll()
         {
-            CommunityViewModel[] communityViewModels = mapper.Map<CommunityViewModel[]>(context.Communities.ToArray());
+			var user = User.Claims;
+			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			CommunityViewModel[] communityViewModels = mapper.Map<CommunityViewModel[]>(context.Communities.ToArray());
             foreach (var item in communityViewModels)
             {
                 item.IsSubscribed = context.CommunityFollowers.Where(x=>x.CommunityId == item.Id && x.AccountId == accountId).FirstOrDefault() != null;
             }
 			return communityViewModels;
         }
-        [Route("add/{name}/creator/{creatorId}")]
+        [Route("add/{name}")]
         [HttpPost]
-        public async Task<ActionResult> Add(string name, int creatorId, [FromBody] string discription)
+        public async Task<ActionResult> Add(string name, [FromBody] string discription)
         {
-           var community =  context.Add(new Community
+			var user = User.Claims;
+			var creatorId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var community =  context.Add(new Community
             {
                 Name = name,
                 Information = discription,

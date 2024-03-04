@@ -6,20 +6,11 @@ namespace Zest.DBModels.Models;
 
 public partial class Account
 {
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public int Id { get; set; }
-
-    public string FirstName { get; set; } = null!;
-
-    public string LastName { get; set; } = null!;
+    public string Id { get; set; }
 
     public string Username { get; set; } = null!;
 
     public string Email { get; set; } = null!;
-
-    public string Password { get; set; } = null!;
-
-    public DateTime Birthdate { get; set; }
 
     public bool IsAdmin { get; set; }
 

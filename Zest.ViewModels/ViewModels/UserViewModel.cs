@@ -8,7 +8,7 @@ namespace Zest.ViewModels.ViewModels
 {
 	public class UserViewModel
 	{
-		public int Id { get; set; }
+		public string Id { get; set; }
 		public string Username { get; set; }
         public bool IsFollowed { get; set; }
         public DateTime CreatedOn1 { get; set; }
