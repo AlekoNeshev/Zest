@@ -8,8 +8,9 @@ public partial class CommunityModerator
     public int CommunityId { get; set; }
 
     public string AccountId { get; set; }
+	public bool IsApproved { get; set; }
 
-    public DateTime CreatedOn { get; set; }
+	public DateTime CreatedOn { get; set; }
 
     public virtual Account Account { get; set; } = null!;
 

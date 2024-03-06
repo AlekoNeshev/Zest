@@ -9,7 +9,8 @@ namespace Zest
     {
         public MappingProfile() 
         {
-            CreateMap<Account, AccountViewModel>();
+            CreateMap<Account, AccountViewModel>()
+				.ForMember(dest => dest.CreatedOn1, op => op.MapFrom(src => src.CreatedOn));
             CreateMap<Post, PostViewModel>()
                 .ForMember(dest => dest.Publisher, op => op.MapFrom(src => src.Account.Username))
                 .ForMember(dest => dest.PostedOn, op => op.MapFrom(src => src.CreatedOn))
@@ -53,7 +54,8 @@ namespace Zest
 			   .ForMember(dest => dest.Text, op => op.MapFrom(src => src.Text));
             CreateMap<PostResources, PostRescourcesViewModel>()
                 .ForMember(dest => dest.Source, op => op.MapFrom(src => src.Path + " "));
-            CreateMap<Account, UserViewModel>();
+            CreateMap<Account, UserViewModel>()
+				.ForMember(dest => dest.CreatedOn1, op => op.MapFrom(src => src.CreatedOn));
 		}
 
     }
