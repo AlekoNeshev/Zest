@@ -13,7 +13,7 @@ namespace Zest.Controllers
 {
 	[Route("api/[controller]")]
 	[ApiController]
-	[Authorize]
+	
 	public class PostRescourcesController : Controller
 	{
 		private ZestContext context;
@@ -108,7 +108,7 @@ namespace Zest.Controllers
 				PostRescourcesViewModel postRescourcesViewModel = new PostRescourcesViewModel();
 				fileResults.Add(new PostRescourcesViewModel()
 				{
-					Id = x.PostId,
+					Id = x.Id,
 					Type = x.Type,
 					Source = "https://localhost:7183/api/PostRescources/ivan/"+x.Name
 				});

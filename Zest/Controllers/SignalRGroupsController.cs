@@ -10,6 +10,7 @@ namespace Zest.Controllers
 {
 	[Route("api/[controller]")]
 	[ApiController]
+	[Authorize]
 	public class SignalRGroupsController : ControllerBase
 	{
         private readonly IHubContext<LikesHub> _likesHubContext;
@@ -24,7 +25,7 @@ namespace Zest.Controllers
 			this._commentsHubContext = commentsHubContext;
 			this._signaRGroupsPlaceholder = signaRGroupsPlaceholder;
         }
-		[Authorize]
+		
         [HttpPost]
 		[Route("addConnectionToGroup/{connectionId}")]
 		public async Task<ActionResult> AddConnectionToGroup(string connectionId, [FromBody]string[]? groupsId)
