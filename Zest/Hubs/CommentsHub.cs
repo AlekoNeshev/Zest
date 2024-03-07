@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using Zest.Services;
+using Zest.Service;
 
 namespace Zest.Hubs
 {
-    public class CommentsHub : Hub
+	public class CommentsHub : Hub
     {
 		private readonly UserConnectionService _notificationService;
 		public CommentsHub(UserConnectionService userConnectionService)

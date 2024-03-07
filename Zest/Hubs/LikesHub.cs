@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using Zest.Services;
+using Zest.Service;
 
 namespace Zest.Hubs;
 

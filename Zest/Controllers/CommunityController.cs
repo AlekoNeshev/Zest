@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using System.Security.Claims;
 using Zest.DBModels;
 using Zest.DBModels.Models;
+using Zest.Services.Infrastructure.Interfaces;
 using Zest.ViewModels.ViewModels;
 
 namespace Zest.Controllers
@@ -15,48 +16,47 @@ namespace Zest.Controllers
     [ApiController]
     public class CommunityController : ControllerBase
     {
-        private ZestContext context;
-        private IMapper mapper;
-        public CommunityController(ZestContext context, IMapper mapper)
-        {
-            this.context = context;
-            this.mapper = mapper;
-        }
-        [Route("{id}")]
-        [HttpGet]
-        public async Task<ActionResult<CommunityViewModel>> Find(int id)
-        {
-            return mapper.Map<CommunityViewModel>(context.Communities.Where(x => x.Id == id).FirstOrDefault());
-        }
-        [Route("getAll")]
-        [HttpGet]
-        public async Task<ActionResult<CommunityViewModel[]>> GetAll()
-        {
-			var user = User.Claims;
-			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-			CommunityViewModel[] communityViewModels = mapper.Map<CommunityViewModel[]>(context.Communities.ToArray());
-            foreach (var item in communityViewModels)
-            {
-                item.IsSubscribed = context.CommunityFollowers.Where(x=>x.CommunityId == item.Id && x.AccountId == accountId).FirstOrDefault() != null;
-            }
+		private readonly ICommunityService _communityService;
+		private readonly ICommunityFollowerService _communityFollowerService;
+		private readonly IMapper _mapper;
+
+		public CommunityController(ICommunityService communityService, ICommunityFollowerService communityFollowerService,IMapper mapper)
+		{
+			_communityService = communityService;
+			_communityFollowerService = communityFollowerService;
+			_mapper = mapper;
+		}
+
+		[Route("{id}")]
+		[HttpGet]
+		public async Task<ActionResult<CommunityViewModel>> Find(int id)
+		{
+			var community = await _communityService.GetCommunityByIdAsync(id);
+			return _mapper.Map<CommunityViewModel>(community);
+		}
+
+		[Route("getAll")]
+		[HttpGet]
+		public async Task<ActionResult<CommunityViewModel[]>> GetAll()
+		{
+			var accountId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			var communities = await _communityService.GetAllCommunitiesAsync(accountId);
+		 var communityViewModels = _mapper.Map<CommunityViewModel[]>(communities);
+			foreach (var item in communityViewModels)
+			{
+				item.IsSubscribed = await  _communityFollowerService.DoesExistAsync(accountId, item.Id);
+			}
 			return communityViewModels;
-        }
-        [Route("add/{name}")]
-        [HttpPost]
-        public async Task<ActionResult> Add(string name, [FromBody] string discription)
-        {
-			var user = User.Claims;
-			var creatorId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-			var community =  context.Add(new Community
-            {
-                Name = name,
-                Information = discription,
-                CreatorId = creatorId,
-                CreatedOn = DateTime.Now,
-            });
-            context.SaveChanges();
-			var communityId = community.Property<int>("Id").CurrentValue;
+		}
+
+		[Route("add/{name}")]
+		[HttpPost]
+		public async Task<ActionResult> Add(string name, [FromBody] string discription)
+		{
+			var creatorId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			
+			var communityId = await _communityService.AddCommunityAsync(creatorId, name, discription);
 			return Ok(communityId);
-        }
-    }
+		}
+	}
 }

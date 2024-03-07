@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using System.Text.RegularExpressions;
 using Zest.Hubs;
-using Zest.Services;
+using Zest.Service;
 
 namespace Zest.Controllers
 {

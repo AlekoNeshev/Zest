@@ -1,0 +1,47 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Zest.DBModels.Models;
+using Zest.DBModels;
+using Zest.Services.Infrastructure.Interfaces;
+using Microsoft.EntityFrameworkCore;
+
+namespace Zest.Services.Infrastructure.Services
+{
+	public class CommunityFollowerService : ICommunityFollowerService
+	{
+		private readonly ZestContext _context;
+
+		public CommunityFollowerService(ZestContext context)
+		{
+			_context = context;
+		}
+
+		public async Task<bool> DoesExistAsync(string accountId, int communityId)
+		{
+			return  await _context.CommunityFollowers.AnyAsync(x => x.AccountId == accountId && x.CommunityId == communityId);
+		}
+
+		public async Task AddAsync(string accountId, int communityId)
+		{
+			if (!await DoesExistAsync(accountId, communityId))
+			{
+				_context.Add(new CommunityFollower { AccountId = accountId, CommunityId = communityId, CreatedOn = DateTime.Now });
+				await _context.SaveChangesAsync();
+			}
+		}
+
+		public async Task DeleteAsync(string accountId, int communityId)
+		{
+			var communityFollower = await _context.CommunityFollowers.FirstOrDefaultAsync(x => x.AccountId == accountId && x.CommunityId == communityId);
+
+			if (communityFollower != null)
+			{
+				_context.Remove(communityFollower);
+				await _context.SaveChangesAsync();
+			}
+		}
+	}
+}

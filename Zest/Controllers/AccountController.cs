@@ -6,8 +6,9 @@ using Microsoft.Identity.Client;
 using System.Security.Claims;
 using Zest.DBModels;
 using Zest.DBModels.Models;
+using Zest.Services.Infrastructure.Interfaces;
+using Zest.Services.Infrastructure.Services;
 using Zest.ViewModels.ViewModels;
-
 namespace Zest.Controllers
 {
 	[Authorize]
@@ -15,61 +16,51 @@ namespace Zest.Controllers
     [ApiController]
     public class AccountController : ControllerBase
     {
-        private ZestContext zestContext;
-        private IMapper mapper;
-        public AccountController(ZestContext zestContext, IMapper mapper)
+        private IAccountService _accountService;
+        private IFollowerService _followerService;
+        IMapper _mapper;
+        public AccountController(IAccountService accountService, IFollowerService followerService,IMapper mapper)
         {
-            this.zestContext = zestContext;
-            this.mapper = mapper;
+            this._accountService = accountService;
+            this._followerService = followerService;
+            this._mapper = mapper;
         }
  
         [Route("get")]
         [HttpGet]
         public async Task<ActionResult<AccountViewModel>> FindById()
         {
-            var id = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
-			return mapper.Map<AccountViewModel>(zestContext.Accounts.Where(x => x.Id ==id).FirstOrDefault());
+            var accountId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var account = await _accountService.FindByIdAsync(accountId);
+            var accountViewModel = _mapper.Map<AccountViewModel>(account);
+            return Ok(accountViewModel);
         }
-        /* [Route("email/{email}/password/{password}")]
-         [HttpGet]
-         public async Task<ActionResult<AccountViewModel>> FindByEmail(string email, string password)
-         {
-             return mapper.Map<AccountViewModel>(zestContext.Accounts.Where(x=>x.Email ==email && x.Password==password).FirstOrDefault());
-         }*/
+       
         [Route("add/{name}/{email}")]
         [HttpPost]
-        public async Task<ActionResult> Add(string name, string email)
+        public async Task<ActionResult<AccountViewModel>> Add(string name, string email)
         {
-            var user = User.Claims;
-            var p = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-           
-			var newAccount = zestContext.Add(new Account
-            {          
-                Id = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value,
-			    Username = name,
-			    Email = email,
-                CreatedOn = DateTime.Now,
-			    IsAdmin = false
+            var accountId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
-            }) ;
-            zestContext.SaveChanges();
-			var accountId = newAccount.Property<string>("Id").CurrentValue;
-            var username = newAccount.Property<string>("Username").CurrentValue;
-			return Ok(new string []{ accountId, username});
+            var account = _accountService.AddAsync(accountId, name, email);
+            var newAccount = _mapper.Map<AccountViewModel>(account);
+       
+            return Ok(newAccount);
         }
 		[Route("getAll")]
 		[HttpGet]
 		public async Task<ActionResult<UserViewModel[]>> GetAll()
 		{
-			var user = User.Claims;
-			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-			UserViewModel[] userViewModels = mapper.Map<UserViewModel[]>(zestContext.Accounts.ToArray());
+			
+			var accountId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var accounts = await _accountService.GetAllAsync(accountId);
+            var userViewModels = _mapper.Map<UserViewModel[]>(accounts);
 			foreach (var item in userViewModels)
 			{
-				item.IsFollowed = zestContext.Followers.Where(x => x.FollowerId == accountId && x.FollowedId == item.Id).FirstOrDefault() != null;
+				
+                item.IsFollowed = _followerService.FindAsync(accountId, item.Id) != null;
 			}
-            return userViewModels;
+			return Ok(userViewModels);
 		}
 	}
 }

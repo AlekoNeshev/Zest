@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Zest.Hubs;
 
-namespace Zest.Services
+namespace Zest.Service
 {
 	public class UserConnectionService
 	{

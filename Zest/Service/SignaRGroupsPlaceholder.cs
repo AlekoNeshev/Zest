@@ -2,7 +2,7 @@
 using System.Text.RegularExpressions;
 using Zest.Hubs;
 
-namespace Zest.Services
+namespace Zest.Service
 {
 	public class SignaRGroupsPlaceholder
 	{
