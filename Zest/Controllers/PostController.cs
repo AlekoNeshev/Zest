@@ -7,7 +7,6 @@ using Microsoft.Extensions.Hosting;
 using System.Security.Claims;
 using Zest.DBModels;
 using Zest.DBModels.Models;
-using Zest.Service;
 using Zest.Services.Infrastructure.Interfaces;
 using Zest.ViewModels.ViewModels;
 

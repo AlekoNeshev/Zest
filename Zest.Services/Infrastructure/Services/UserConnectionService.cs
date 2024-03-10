@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using Zest.Hubs;
+using Zest.Services.Hubs;
 
-namespace Zest.Service
+namespace Zest.Services.Infrastructure.Services
 {
 	public class UserConnectionService
 	{
@@ -38,7 +38,7 @@ namespace Zest.Service
 				}
 			}
 		}
-	
+
 
 		public async Task SendNotificationToUser(string userId, int commentId)
 		{

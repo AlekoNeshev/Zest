@@ -6,16 +6,20 @@ using System.Threading.Tasks;
 using Zest.DBModels.Models;
 using Zest.DBModels;
 using Zest.Services.Infrastructure.Interfaces;
+using AutoMapper;
+using Zest.ViewModels.ViewModels;
 
 namespace Zest.Services.Infrastructure.Services
 {
 	public class CommunityService : ICommunityService
 	{
 		private readonly ZestContext _context;
+		private readonly IMapper _mapper;
 
-		public CommunityService(ZestContext context)
+		public CommunityService(ZestContext context, IMapper mapper)
 		{
 			_context = context;
+			_mapper = mapper;
 		}
 
 		public async Task<Community> GetCommunityByIdAsync(int id)
@@ -42,6 +46,10 @@ namespace Zest.Services.Infrastructure.Services
 			await _context.AddAsync(community);
 			await _context.SaveChangesAsync();
 			return community.Id;
+		}
+		public async Task<CommunityViewModel[]> GetCommunitiesByAccount(string accountId)
+		{
+			return _mapper.Map<CommunityViewModel[]>(_context.CommunityFollowers.Where(x => x.AccountId==accountId).Select(x => x.Community).ToArray());
 		}
 	}
 }

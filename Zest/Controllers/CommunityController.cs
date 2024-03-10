@@ -58,5 +58,12 @@ namespace Zest.Controllers
 			var communityId = await _communityService.AddCommunityAsync(creatorId, name, discription);
 			return Ok(communityId);
 		}
+		[Route("GetByAccountId/{accountId}")]
+		[HttpGet]
+		public async Task<ActionResult<CommunityViewModel[]>> GetCommunitiesByAccount(string accountId)
+		{
+			var communities = await _communityService.GetCommunitiesByAccount(accountId);
+			return communities;
+		}
 	}
 }

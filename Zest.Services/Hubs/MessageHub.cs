@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using Zest.Service;
+using Zest.Services.Infrastructure.Services;
 
-namespace Zest.Hubs
+namespace Zest.Services.Hubs
 {
 	public class MessageHub : Hub
 	{
@@ -14,7 +14,7 @@ namespace Zest.Hubs
 		public override async Task OnConnectedAsync()
 		{
 			var connectionId = Context.ConnectionId;
-			var uniqueProperty = (Context.GetHttpContext().Request.Headers["userId"]);
+			var uniqueProperty = Context.GetHttpContext().Request.Headers["userId"];
 
 
 			_notificationService.AddConnection(uniqueProperty, connectionId);

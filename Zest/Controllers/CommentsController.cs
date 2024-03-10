@@ -8,7 +8,6 @@ using Microsoft.Identity.Client;
 using System.Security.Claims;
 using Zest.DBModels;
 using Zest.DBModels.Models;
-using Zest.Hubs;
 using Zest.Services.Infrastructure.Interfaces;
 using Zest.ViewModels.ViewModels;
 

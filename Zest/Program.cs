@@ -3,8 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Zest.DBModels;
-using Zest.Hubs;
-using Zest.Service;
+using Zest.Services.Hubs;
 using Zest.Services.Infrastructure.Interfaces;
 using Zest.Services.Infrastructure.Services;
 
@@ -30,6 +29,9 @@ namespace Zest
 			builder.Services.AddScoped<ILikeService, LikeService>();
 			builder.Services.AddScoped<IMessageService, MessageService>();
 			builder.Services.AddScoped<IPostService, PostService>();
+			builder.Services.AddScoped<IPostResourcesService, PostResourcesService>();
+			builder.Services.AddScoped<ISignaRService, SignalRService>();
+			builder.Services.AddScoped<ISignaRGroupsPlaceholder,SignaRGroupsPlaceholder>();
 
 			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 			builder.Services.AddEndpointsApiExplorer();

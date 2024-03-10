@@ -5,8 +5,7 @@ using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
 using Zest.DBModels;
 using Zest.DBModels.Models;
-using Zest.Hubs;
-using Zest.Service;
+using Zest.Services.Hubs;
 using Zest.Services.Infrastructure.Interfaces;
 
 namespace Zest.Controllers
