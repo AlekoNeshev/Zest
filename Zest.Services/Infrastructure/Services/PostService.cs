@@ -7,16 +7,19 @@ using Zest.DBModels.Models;
 using Zest.DBModels;
 using Zest.Services.Infrastructure.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Zest.ViewModels.ViewModels;
+using AutoMapper;
 
 namespace Zest.Services.Infrastructure.Services
 {
 	public class PostService : IPostService
 	{
 		private readonly ZestContext _context;
-
-		public PostService(ZestContext context)
+		private readonly IMapper _mapper;
+		public PostService(ZestContext context, IMapper mapper)
 		{
 			_context = context;
+			_mapper = mapper;
 		}
 
 		public async Task<Post> FindAsync(int id)
@@ -64,7 +67,51 @@ namespace Zest.Services.Infrastructure.Services
 				.Take(takeCount)
 				.ToListAsync();
 		}
+		public async Task<List<PostViewModel>> GetTrending(int[] skipIds, int takeCount)
+		{
+			var cutoffDate = DateTime.UtcNow - TimeSpan.FromHours(72);
+			var posts = _context.Posts.Where(x => x.CreatedOn >= cutoffDate).ToList();
 
+			var likeWeight = 1.0;
+			var commentWeight = 0.5;
+			var decayFactor = 0.9;
+
+			var scores = posts.Select(p => new { Post = p, Score = CalculateScore(p, likeWeight, commentWeight, decayFactor) });
+
+			var filteredScores = scores.Where(s => !skipIds.Contains(s.Post.Id)).OrderByDescending(s => s.Score);
+
+			var trendingPosts = _mapper.Map<List<PostViewModel>>(filteredScores.Take(takeCount).ToList());
+
+			return trendingPosts;
+		}
+		public async Task<List<PostViewModel>> GetFollowedPostsAsync(int[] skipIds, int takeCount, string accountId)
+		{
+			var followedUserIds = _context.Followers
+	.Where(f => f.FollowerId == accountId)
+	.Select(f => f.FollowedId)
+	.ToList();
+			var followedCommunityIds = _context.CommunityFollowers
+	.Where(cf => cf.AccountId == accountId)
+	.Select(cf => cf.CommunityId)
+	.ToList();
+			var posts = _mapper.Map<List<PostViewModel>(_context.Posts
+	.Where(p =>
+		(followedUserIds.Contains(p.AccountId)) ||
+		(followedCommunityIds.Contains(p.CommunityId)))
+	.Where(p => !skipIds.Contains(p.Id))
+	.OrderByDescending(p => p.CreatedOn)
+	.Take(takeCount)
+	.ToList());
+
+		}
+		private double CalculateScore(Post post, double likeWeight, double commentWeight, double decayFactor)
+		{
+			var now = DateTime.UtcNow;
+			var likeScore = post.Likes.Sum(l => Math.Pow(decayFactor, (now - l.CreatedOn).TotalHours)) * likeWeight;
+			var commentScore = post.Comments.Sum(c => Math.Pow(decayFactor, (now - c.CreatedOn).TotalHours)) * commentWeight;
+
+			return likeScore + commentScore;
+		}
 		public async Task<List<Post>> GetByCommunityAsync(int communityId)
 		{
 			return await _context.Posts
