@@ -57,8 +57,9 @@ namespace Zest.Controllers
             var userViewModels = _mapper.Map<UserViewModel[]>(accounts);
 			foreach (var item in userViewModels)
 			{
-				
-                item.IsFollowed = _followerService.FindAsync(accountId, item.Id) != null;
+                
+                
+				item.IsFollowed = await _followerService.FindAsync(accountId, item.Id) != null;
 			}
 			return Ok(userViewModels);
 		}
