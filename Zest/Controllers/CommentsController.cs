@@ -75,11 +75,11 @@ namespace Zest.Controllers
 			return Ok(commentId);
 		}
 
-		[Route("getCommentsByPost/{postId}")]
+		[Route("getCommentsByPost/{postId}/{lastDate}/{takeCount}")]
 		[HttpGet]
-		public async Task<ActionResult<CommentViewModel[]>> GetCommentsByPost(int postId)
+		public async Task<ActionResult<CommentViewModel[]>> GetCommentsByPost(int postId, [FromRoute] DateTime lastDate, int takeCount)
 		{
-			var comments = await _commentsService.GetCommentsByPostIdAsync(postId);
+			var comments = await _commentsService.GetCommentsByPostIdAsync(postId, lastDate, takeCount);
 			var viewModels = _mapper.Map<CommentViewModel[]>(comments);
 			return viewModels;
 		}

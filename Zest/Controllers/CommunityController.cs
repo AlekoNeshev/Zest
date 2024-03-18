@@ -65,5 +65,12 @@ namespace Zest.Controllers
 			var communities = await _communityService.GetCommunitiesByAccount(accountId);
 			return communities;
 		}
+		[Route("GetByPopularityId/{takeCount}")]
+		[HttpPost]
+		public async Task<ActionResult<CommunityViewModel[]>> GetCommunitiesByPopularity(int takeCount,[FromBody] int[]? skipIds)
+		{
+			var communities = await _communityService.GetTrendingCommunities(skipIds, takeCount);
+			return communities;
+		}
 	}
 }

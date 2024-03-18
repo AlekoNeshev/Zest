@@ -11,6 +11,8 @@ using Zest.ViewModels.ViewModels;
 using AutoMapper;
 using Microsoft.Identity.Client;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using NodaTime;
+using NodaTime.Extensions;
 
 namespace Zest.Services.Infrastructure.Services
 {
@@ -55,12 +57,15 @@ namespace Zest.Services.Infrastructure.Services
 			await _context.SaveChangesAsync();
 		}
 
-		public async Task<Comment[]> GetCommentsByPostIdAsync(int postId)
+		public async Task<Comment[]> GetCommentsByPostIdAsync(int postId, DateTime lastDate, int takeCount)
 		{
+			
+			var coms = await _context.Comments.Where(x=>x.CreatedOn > lastDate).ToArrayAsync();
 			var comments = await _context.Comments
-				.Include(x => x.Replies)
-				.ThenInclude(x => x.Replies)
-				.Where(x => x.PostId == postId && x.CommentId == null)
+				
+				.Where(x => x.PostId == postId && x.CommentId == null && x.CreatedOn < lastDate)
+				.OrderBy(x=>x.CreatedOn)
+				.Take(takeCount)
 				.ToArrayAsync();
 			return comments;
 		}

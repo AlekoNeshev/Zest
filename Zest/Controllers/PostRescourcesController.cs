@@ -29,11 +29,12 @@ namespace Zest.Controllers
 		
 
 		[HttpPost("uploadFile/{postId}")]
-		public async Task<IActionResult> UploadFile(int postId, IFormFile postedFile)
+		public async Task<IActionResult> UploadFile(int postId, IFormFileCollection postedFiles)
 		{
-			var file = await _postResourceService.UploadFileAsync(postId, postedFile);
+			
+			var file = await _postResourceService.UploadFileAsync(postId, postedFiles);
 
-			return Ok(file);
+			return Ok();
 		}
 
 		[HttpGet("ivan/{fileName}")]

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Zest.DBModels.Models;
+using Zest.ViewModels.ViewModels;
 
 namespace Zest.Services.Infrastructure.Interfaces
 {
@@ -16,5 +17,7 @@ namespace Zest.Services.Infrastructure.Interfaces
 		Task<List<Post>> GetByCommunityAsync(int communityId);
 		Task<List<Post>> GetBySearchAsync(string search);
 		Task<bool> IsOwnerAsync(int postId, string accountId);
+		Task<List<PostViewModel>> GetFollowedPostsAsync(int[] skipIds, int takeCount, string accountId);
+		Task<List<PostViewModel>> GetTrending(int[] skipIds, int takeCount, int communityId = 0);
 	}
 }

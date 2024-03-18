@@ -59,18 +59,15 @@ namespace Zest.Controllers
 			return Ok();
 		}
 
-		[Route("getByDate/{lastDate}/{minimumSkipCount}/{takeCount}")]
+		[Route("getByDate/{lastDate}/{communityId}/{takeCount}")]
 		[HttpGet]
-		public async Task<ActionResult<PostViewModel[]>> GetByDate([FromRoute] DateTime lastDate, int minimumSkipCount, int takeCount)
+		public async Task<ActionResult<PostViewModel[]>> GetByDate([FromRoute] DateTime lastDate, int communityId, int takeCount)
 		{
 			var user = User.Claims;
 			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
-			var posts = _mapper.Map<PostViewModel[]>(await _postService.GetByDateAsync(lastDate, minimumSkipCount, takeCount));
-			foreach (var item in posts)
-			{
-				item.IsOwner = await _postService.IsOwnerAsync(item.Id, accountId);
-			}
+			var posts = _mapper.Map<PostViewModel[]>(await _postService.GetByDateAsync(lastDate, communityId, takeCount));
+			
 			return posts;
 		}
 
@@ -81,10 +78,7 @@ namespace Zest.Controllers
 			var user = User.Claims;
 			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 			var posts = _mapper.Map<PostViewModel[]>(await _postService.GetByCommunityAsync(communityId));
-			foreach (var item in posts)
-			{
-				item.IsOwner = await _postService.IsOwnerAsync(item.Id, accountId);
-			}
+			
 			return posts;
 		}
 
@@ -95,11 +89,28 @@ namespace Zest.Controllers
 			var user = User.Claims;
 			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 			var posts = _mapper.Map<PostViewModel[]>(await _postService.GetBySearchAsync(search));
-			foreach (var item in posts)
-			{
-				item.IsOwner = await _postService.IsOwnerAsync(item.Id, accountId);
-			}
+			
 			return posts;
+		}
+		[Route("getByTrending/{takeCount}/{communityId}")]
+		[HttpPost]
+		public async Task<ActionResult<PostViewModel[]>> GetByTrending(int takeCount, int communityId,[FromBody] int[]? skipIds)
+		{
+			var user = User.Claims;
+			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var posts = await _postService.GetTrending(skipIds, takeCount, communityId);
+			
+			return posts.ToArray();
+		}
+		[Route("getByFollowed/{takeCount}")]
+		[HttpPost]
+		public async Task<ActionResult<PostViewModel[]>> GetByFollowed(int takeCount, [FromBody] int[]? skipIds)
+		{
+			var user = User.Claims;
+			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var posts = await _postService.GetFollowedPostsAsync(skipIds, takeCount, accountId);
+			
+			return posts.ToArray();
 		}
 	}
 }

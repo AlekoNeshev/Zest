@@ -39,61 +39,65 @@ namespace Zest.Services.Infrastructure.Services
 			return postResource;
 		}
 
-		public async Task<string> UploadFileAsync(int postId, IFormFile postedFile)
+		public async Task<string> UploadFileAsync(int postId, IFormFileCollection postedFiles)
 		{
-			var type = GetMimeTypeByWindowsRegistry(postedFile.FileName);
-			if (!string.Equals(type, "image/jpg", StringComparison.OrdinalIgnoreCase) &&
-			   !string.Equals(type, "image/jpeg", StringComparison.OrdinalIgnoreCase) &&
-			   !string.Equals(type, "image/pjpeg", StringComparison.OrdinalIgnoreCase) &&
-			   !string.Equals(type, "image/gif", StringComparison.OrdinalIgnoreCase) &&
-			   !string.Equals(type, "image/x-png", StringComparison.OrdinalIgnoreCase) &&
-			   !string.Equals(type, "image/png", StringComparison.OrdinalIgnoreCase)&& !string.Equals(type, "video/mp4", StringComparison.OrdinalIgnoreCase))
-
-
+			foreach (var postedFile in postedFiles)
 			{
-				return "Incorrect mime!";
-			}
 
 
-			var postedFileExtension = Path.GetExtension(postedFile.FileName);
-			if (!string.Equals(postedFileExtension, ".jpg", StringComparison.OrdinalIgnoreCase)
-				&& !string.Equals(postedFileExtension, ".png", StringComparison.OrdinalIgnoreCase)
-				&& !string.Equals(postedFileExtension, ".gif", StringComparison.OrdinalIgnoreCase)
-				&& !string.Equals(postedFileExtension, ".jpeg", StringComparison.OrdinalIgnoreCase)&& !string.Equals(postedFileExtension, ".mp4", StringComparison.OrdinalIgnoreCase))
-			{
-				return "Incorrect extension!";
-			}
-			
-			var newName = Guid.NewGuid().ToString();
-			var uploads = Path.Combine(Assembly.GetEntryAssembly().Location.Replace("Zest.dll", ""), "uploads");
+				var type = GetMimeTypeByWindowsRegistry(postedFile.FileName);
+				if (!string.Equals(type, "image/jpg", StringComparison.OrdinalIgnoreCase) &&
+				   !string.Equals(type, "image/jpeg", StringComparison.OrdinalIgnoreCase) &&
+				   !string.Equals(type, "image/pjpeg", StringComparison.OrdinalIgnoreCase) &&
+				   !string.Equals(type, "image/gif", StringComparison.OrdinalIgnoreCase) &&
+				   !string.Equals(type, "image/x-png", StringComparison.OrdinalIgnoreCase) &&
+				   !string.Equals(type, "image/png", StringComparison.OrdinalIgnoreCase)&& !string.Equals(type, "video/mp4", StringComparison.OrdinalIgnoreCase))
 
-			if (!Directory.Exists(uploads))
-			{
-				Directory.CreateDirectory(uploads);
-			}
 
-			if (postedFile.Length > 0)
-			{
-				var filePath = Path.Combine(uploads, $"{newName}{postedFileExtension}");
-				using (var fileStream = new FileStream(filePath, FileMode.Create))
 				{
-					await postedFile.CopyToAsync(fileStream);
+					return "Incorrect mime!";
 				}
 
-				var postResource = new PostResources
+
+				var postedFileExtension = Path.GetExtension(postedFile.FileName);
+				if (!string.Equals(postedFileExtension, ".jpg", StringComparison.OrdinalIgnoreCase)
+					&& !string.Equals(postedFileExtension, ".png", StringComparison.OrdinalIgnoreCase)
+					&& !string.Equals(postedFileExtension, ".gif", StringComparison.OrdinalIgnoreCase)
+					&& !string.Equals(postedFileExtension, ".jpeg", StringComparison.OrdinalIgnoreCase)&& !string.Equals(postedFileExtension, ".mp4", StringComparison.OrdinalIgnoreCase))
 				{
-					Name = $"{newName}{postedFileExtension}",
-					Type = type.Split("/").ToArray()[0].Trim(),
-					Path = filePath,
-					CreatedOn = DateTime.Now,
-					PostId = postId
-				};
+					return "Incorrect extension!";
+				}
 
-				await AddPostResourceAsync(postResource);
-				return $"{newName}{postedFileExtension}";
+				var newName = Guid.NewGuid().ToString();
+				var uploads = Path.Combine(Assembly.GetEntryAssembly().Location.Replace("Zest.dll", ""), "uploads");
+
+				if (!Directory.Exists(uploads))
+				{
+					Directory.CreateDirectory(uploads);
+				}
+
+				if (postedFile.Length > 0)
+				{
+					var filePath = Path.Combine(uploads, $"{newName}{postedFileExtension}");
+					using (var fileStream = new FileStream(filePath, FileMode.Create))
+					{
+						await postedFile.CopyToAsync(fileStream);
+					}
+
+					var postResource = new PostResources
+					{
+						Name = $"{newName}{postedFileExtension}",
+						Type = type.Split("/").ToArray()[0].Trim(),
+						Path = filePath,
+						CreatedOn = DateTime.Now,
+						PostId = postId
+					};
+
+					await AddPostResourceAsync(postResource);
+					
+				}
 			}
-
-			return null;
+			return "Shiish";
 		}
 
 		public async Task<FileResult> GetFileAsync(string fileName)

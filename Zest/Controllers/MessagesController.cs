@@ -37,14 +37,14 @@ namespace Zest.Controllers
 			return _mapper.Map<MessageViewModel>(message);
 		}
 
-		[Route("get/receiver/{receiverId}")]
+		[Route("get/receiver/{receiverId}/{takeCount}/{date}")]
 		[HttpGet]
-		public async Task<ActionResult<MessageViewModel[]>> GetMessagesByReceiverId(string receiverId)
+		public async Task<ActionResult<MessageViewModel[]>> GetMessagesByReceiverId(string receiverId, int takeCount, [FromRoute]DateTime date)
 		{
 			var user = User.Claims;
 			var senderId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-			var messages = await _messageService.GetMessagesBySenderAndReceiverIdsAsync(senderId, receiverId);
-			return _mapper.Map<MessageViewModel[]>(messages.OrderBy(x => x.CreatedOn).ToArray());
+			var messages = await _messageService.GetMessagesBySenderAndReceiverIdsAsync(senderId, receiverId, takeCount, date);
+			return _mapper.Map<MessageViewModel[]>(messages.ToArray());
 		}
 
 		[Route("add/receiver/{receiverId}")]

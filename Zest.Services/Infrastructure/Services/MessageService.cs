@@ -24,16 +24,16 @@ namespace Zest.Services.Infrastructure.Services
 			return await _context.Messages.FindAsync(id);
 		}
 
-		public async Task<List<Message>> GetMessagesBySenderAndReceiverIdsAsync(string senderId, string receiverId)
+		public async Task<List<Message>> GetMessagesBySenderAndReceiverIdsAsync(string senderId, string receiverId, int takeCount, DateTime date)
 		{
-			var messagesFromSender = await _context.Messages.Where(x => x.SenderId == senderId && x.ReceiverId == receiverId).ToListAsync();
-			var messagesFromReceiver = await _context.Messages.Where(x => x.SenderId == receiverId && x.ReceiverId == senderId).ToListAsync();
+			var messagesFromSender = await _context.Messages.Where(x => x.SenderId == senderId && x.ReceiverId == receiverId && x.CreatedOn < date).ToListAsync();
+			var messagesFromReceiver = await _context.Messages.Where(x => x.SenderId == receiverId && x.ReceiverId == senderId && x.CreatedOn < date).ToListAsync();
 
 			var messages = new List<Message>(messagesFromSender.Count + messagesFromReceiver.Count);
 			messages.AddRange(messagesFromSender);
 			messages.AddRange(messagesFromReceiver);
-
-			return messages;
+			messages = messages.OrderByDescending(x=>x.CreatedOn).ToList();
+			return messages.Take(takeCount).ToList();
 		}
 
 		public async Task<Message> AddAsync(string senderId, string receiverId, string text)

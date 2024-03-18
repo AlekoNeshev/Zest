@@ -44,6 +44,16 @@ namespace Zest.Services.Infrastructure.Services
 				CreatedOn = DateTime.Now,
 			};
 			await _context.AddAsync(community);
+			
+			await _context.SaveChangesAsync();
+			var communityModerator = new CommunityModerator
+			{
+				CommunityId = community.Id,
+				AccountId = creatorId,
+				IsApproved = true,
+				CreatedOn = DateTime.Now
+			};
+			await _context.AddAsync(communityModerator);
 			await _context.SaveChangesAsync();
 			return community.Id;
 		}
@@ -51,5 +61,44 @@ namespace Zest.Services.Infrastructure.Services
 		{
 			return _mapper.Map<CommunityViewModel[]>(_context.CommunityFollowers.Where(x => x.AccountId==accountId).Select(x => x.Community).ToArray());
 		}
+		public async Task<CommunityViewModel[]> GetTrendingCommunities(int[] skipIds, int takeCount)
+		{
+			
+
+			var filteredCommunities = _context.Communities.Where(c => !skipIds.Contains(c.Id)).ToArray();
+
+
+			var communityScores = new List<(Community Community, int Score)>();
+
+			foreach (var community in filteredCommunities)
+			{
+				var (userCount, postCount, likeCount, commentCount) = CalculateCommunityStats(community);
+				var score = CalculateCommunityScore(userCount, postCount, likeCount, commentCount);
+				communityScores.Add((Community: community, Score: score));
+			}
+
+			return _mapper.Map<CommunityViewModel[]>(communityScores.OrderByDescending(c => c.Score).Take(takeCount).Select(c => c.Community).ToArray());
+		}
+		private (int userCount, int postCount, int likeCount, int commentCount) CalculateCommunityStats(Community community)
+		{
+			var cutoffDate = DateTime.UtcNow - TimeSpan.FromHours(72);
+			var userCount = _context.CommunityFollowers.Count(cf => cf.CommunityId == community.Id);
+			var recentPosts = community.Posts.Where(x => x.CreatedOn >= cutoffDate).ToArray();
+			var postCount = recentPosts.Count();
+			var likeCount = recentPosts.Sum(p => p.Likes.Count + p.Comments.Sum(c => c.Likes.Count));
+			var commentCount = community.Posts.Sum(p => p.Comments.Count());
+
+			return (userCount, postCount, likeCount, commentCount);
+		}
+		private int CalculateCommunityScore(int userCount, int postCount, int likeCount, int commentCount)
+		{
+			const int userWeight = 3;
+			const int postWeight = 2;
+			const int likeWeight = 1;
+			const int commentWeight = 1;
+
+			return userWeight * userCount + postWeight * postCount + likeWeight * likeCount + commentWeight * commentCount;
+		}
+
 	}
 }

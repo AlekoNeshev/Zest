@@ -58,20 +58,31 @@ namespace Zest.Services.Infrastructure.Services
 			await _context.SaveChangesAsync();
 		}
 
-		public async Task<List<Post>> GetByDateAsync(DateTime lastDate, int minimumSkipCount, int takeCount)
+		public async Task<List<Post>> GetByDateAsync(DateTime lastDate, int communityId, int takeCount)
 		{
-			return await _context.Posts
+			
+			if(communityId != 0)
+			{
+				return await _context.Posts
+				.Where(x => x.CommunityId == communityId && x.CreatedOn < lastDate)
 				.OrderByDescending(p => p.CreatedOn)
-				.Skip(minimumSkipCount)
+				.Take(takeCount)
+				.ToListAsync();
+			}
+			return await _context.Posts
 				.Where(x => x.CreatedOn < lastDate)
+				.OrderByDescending(p => p.CreatedOn)
 				.Take(takeCount)
 				.ToListAsync();
 		}
-		public async Task<List<PostViewModel>> GetTrending(int[] skipIds, int takeCount)
+		public async Task<List<PostViewModel>> GetTrending(int[] skipIds, int takeCount, int communityId = 0)
 		{
 			var cutoffDate = DateTime.UtcNow - TimeSpan.FromHours(72);
 			var posts = _context.Posts.Where(x => x.CreatedOn >= cutoffDate).ToList();
-
+			if(communityId > 0)
+			{
+				posts = posts.Where(x=>x.CommunityId == communityId).ToList();
+			}
 			var likeWeight = 1.0;
 			var commentWeight = 0.5;
 			var decayFactor = 0.9;
@@ -80,7 +91,7 @@ namespace Zest.Services.Infrastructure.Services
 
 			var filteredScores = scores.Where(s => !skipIds.Contains(s.Post.Id)).OrderByDescending(s => s.Score);
 
-			var trendingPosts = _mapper.Map<List<PostViewModel>>(filteredScores.Take(takeCount).ToList());
+			var trendingPosts = _mapper.Map<List<PostViewModel>>(filteredScores.Take(takeCount).Select(x=>x.Post).ToList());
 
 			return trendingPosts;
 		}
@@ -94,15 +105,15 @@ namespace Zest.Services.Infrastructure.Services
 	.Where(cf => cf.AccountId == accountId)
 	.Select(cf => cf.CommunityId)
 	.ToList();
-			var posts = _mapper.Map<List<PostViewModel>(_context.Posts
+			var posts = _mapper.Map<List<PostViewModel>>(_context.Posts
 	.Where(p =>
-		(followedUserIds.Contains(p.AccountId)) ||
-		(followedCommunityIds.Contains(p.CommunityId)))
+		followedUserIds.Contains(p.AccountId) ||
+		followedCommunityIds.Contains(p.CommunityId))
 	.Where(p => !skipIds.Contains(p.Id))
 	.OrderByDescending(p => p.CreatedOn)
 	.Take(takeCount)
 	.ToList());
-
+			return posts;
 		}
 		private double CalculateScore(Post post, double likeWeight, double commentWeight, double decayFactor)
 		{
