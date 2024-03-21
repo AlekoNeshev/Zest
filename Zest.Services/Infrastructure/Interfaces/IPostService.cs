@@ -10,14 +10,14 @@ namespace Zest.Services.Infrastructure.Interfaces
 {
 	public interface IPostService
 	{
-		Task<Post> FindAsync(int id);
+		Task<PostViewModel> FindAsync(int id, string accountId);
 		Task<Post> AddAsync(string title, string text, string accountId, int communityId);
 		Task RemoveAsync(int id);
-		Task<List<Post>> GetByDateAsync(DateTime lastDate, int minimumSkipCount, int takeCount);
-		Task<List<Post>> GetByCommunityAsync(int communityId);
-		Task<List<Post>> GetBySearchAsync(string search);
+		Task<PostViewModel[]> GetByDateAsync(string accountId, DateTime lastDate, int communityId, int takeCount);
+		Task<Post[]> GetByCommunityAsync(int communityId);
+		Task<PostViewModel[]> GetBySearchAsync(string search, string accountId);
 		Task<bool> IsOwnerAsync(int postId, string accountId);
-		Task<List<PostViewModel>> GetFollowedPostsAsync(int[] skipIds, int takeCount, string accountId);
-		Task<List<PostViewModel>> GetTrending(int[] skipIds, int takeCount, int communityId = 0);
+		Task<PostViewModel[]> GetFollowedPostsAsync(int[] skipIds, int takeCount, string accountId);
+		Task<PostViewModel[]> GetTrending(int[] skipIds, int takeCount, string accountId,int communityId = 0);
 	}
 }

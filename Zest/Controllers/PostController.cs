@@ -30,7 +30,9 @@ namespace Zest.Controllers
 		[HttpGet]
 		public async Task<ActionResult<PostViewModel>> Find(int id)
 		{
-			var post = await _postService.FindAsync(id);
+			var user = User.Claims;
+			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var post = await _postService.FindAsync(id, accountId);
 			return _mapper.Map<PostViewModel>(post);
 		}
 
@@ -48,7 +50,9 @@ namespace Zest.Controllers
 		[HttpPut]
 		public async Task<ActionResult> Remove(int postId)
 		{
-			var post = await _postService.FindAsync(postId);
+			var user = User.Claims;
+			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var post = await _postService.FindAsync(postId, accountId);
 
 			if (post == null)
 			{
@@ -66,7 +70,7 @@ namespace Zest.Controllers
 			var user = User.Claims;
 			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
-			var posts = _mapper.Map<PostViewModel[]>(await _postService.GetByDateAsync(lastDate, communityId, takeCount));
+			var posts = await _postService.GetByDateAsync(accountId, lastDate, communityId, takeCount);
 			
 			return posts;
 		}
@@ -88,7 +92,7 @@ namespace Zest.Controllers
 		{
 			var user = User.Claims;
 			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-			var posts = _mapper.Map<PostViewModel[]>(await _postService.GetBySearchAsync(search));
+			var posts = _mapper.Map<PostViewModel[]>(await _postService.GetBySearchAsync(search, accountId));
 			
 			return posts;
 		}
@@ -98,7 +102,7 @@ namespace Zest.Controllers
 		{
 			var user = User.Claims;
 			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-			var posts = await _postService.GetTrending(skipIds, takeCount, communityId);
+			var posts = await _postService.GetTrending(skipIds, takeCount, accountId,communityId);
 			
 			return posts.ToArray();
 		}

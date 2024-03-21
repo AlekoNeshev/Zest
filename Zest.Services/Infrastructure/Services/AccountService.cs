@@ -48,7 +48,7 @@ namespace Zest.Services.Infrastructure.Services
 		public async Task<Account[]> GetAllAsync(string accountId)
 		{
 			
-			var accounts = _zestContext.Accounts.ToArray();
+			var accounts = _zestContext.Accounts.Where(x=>x.Id != accountId).ToArray();
 			
 			return accounts;
 		}

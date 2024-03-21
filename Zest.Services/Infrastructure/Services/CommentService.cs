@@ -27,7 +27,13 @@ namespace Zest.Services.Infrastructure.Services
 			this._mapper = mapper;
 		}
 
-		public async Task<Comment> FindAsync(int id)
+		public async Task<CommentViewModel> FindAsync(int id, string accountId)
+		{
+			var comment = _mapper.Map<CommentViewModel>(await _context.Comments.FindAsync(id));
+			comment.Like = _mapper.Map<LikeViewModel>(await _context.Likes.Where(x => x.AccountId == accountId && x.CommentId == comment.Id).FirstOrDefaultAsync());
+			return comment;
+		}
+		private async Task<Comment> FindCommentAsync(int id)
 		{
 			var comment = await _context.Comments.FindAsync(id);
 			return comment;
@@ -50,23 +56,28 @@ namespace Zest.Services.Infrastructure.Services
 			return comment;
 		}
 
-		public async Task RemoveAsync(Comment comment)
+		public async Task RemoveAsync(int id)
 		{
+			var comment  = await FindCommentAsync(id);
 			comment.IsDeleted = true;
 			_context.Update(comment);
 			await _context.SaveChangesAsync();
 		}
 
-		public async Task<Comment[]> GetCommentsByPostIdAsync(int postId, DateTime lastDate, int takeCount)
+		public async Task<CommentViewModel[]> GetCommentsByPostIdAsync(int postId, DateTime lastDate, int takeCount, string accountId)
 		{
 			
-			var coms = await _context.Comments.Where(x=>x.CreatedOn > lastDate).ToArrayAsync();
-			var comments = await _context.Comments
+			
+			var comments = _mapper.Map<CommentViewModel[]>(await _context.Comments
 				
 				.Where(x => x.PostId == postId && x.CommentId == null && x.CreatedOn < lastDate)
 				.OrderBy(x=>x.CreatedOn)
 				.Take(takeCount)
-				.ToArrayAsync();
+				.ToArrayAsync());
+			foreach (var comment in comments)
+			{
+				comment.Like = _mapper.Map<LikeViewModel>(await _context.Likes.Where(x => x.AccountId == accountId && x.CommentId == comment.Id).FirstOrDefaultAsync());
+			}
 			return comments;
 		}
 	}

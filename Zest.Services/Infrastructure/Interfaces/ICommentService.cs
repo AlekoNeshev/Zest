@@ -5,14 +5,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Zest.DBModels.Models;
+using Zest.ViewModels.ViewModels;
 
 namespace Zest.Services.Infrastructure.Interfaces
 {
 	public interface ICommentsService
 	{
-		Task<Comment> FindAsync(int id);
+		Task<CommentViewModel> FindAsync(int id, string accountId);
 		Task<EntityEntry<Comment>> AddAsync(string accountId, int postId, string text, int commentId);
-		Task RemoveAsync(Comment comment);
-		Task<Comment[]> GetCommentsByPostIdAsync(int postId, DateTime lastDate, int takeCount);
+		Task RemoveAsync(int id);
+		Task<CommentViewModel[]> GetCommentsByPostIdAsync(int postId, DateTime lastDate, int takeCount, string accountId);
+		
 	}
 }

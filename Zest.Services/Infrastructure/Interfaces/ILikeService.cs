@@ -10,7 +10,6 @@ namespace Zest.Services.Infrastructure.Interfaces
 	{
 		Task AddLikeToPost(string accountId, int postId, bool value);
 		Task AddLikeToComment(string accountId, int commentId, bool value);
-		Task RemoveLikeFromPost(string accountId, int postId);
-		Task RemoveLikeFromComment(string accountId, int commentId);
+		Task RemoveLike(int likeId);
 	}
 }

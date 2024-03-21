@@ -10,7 +10,7 @@ namespace Zest.Controllers
 {
 	[Route("api/[controller]")]
 	[ApiController]
-	[Authorize]
+	
 	public class SignalRGroupsController : ControllerBase
 	{
        

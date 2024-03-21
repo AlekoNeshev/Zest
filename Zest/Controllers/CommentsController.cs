@@ -33,8 +33,10 @@ namespace Zest.Controllers
 		[Route("{id}")]
 		public async Task<ActionResult<CommentViewModel>> Find(int id)
 		{
-			var comment = await _commentsService.FindAsync(id);
-			return _mapper.Map<CommentViewModel>(comment);
+			var user = User.Claims;
+			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var comment = await _commentsService.FindAsync(id, accountId);
+			return comment;
 		}
 
 		[Route("add/post/{postId}/comment/{commentId}")]
@@ -65,13 +67,9 @@ namespace Zest.Controllers
 		[HttpPut]
 		public async Task<ActionResult> Remove(int commentId)
 		{
-			var comment = await _commentsService.FindAsync(commentId);
-			if (comment == null)
-			{
-				return BadRequest();
-			}
 			
-			await _commentsService.RemoveAsync(comment);
+			
+			await _commentsService.RemoveAsync(commentId);
 			return Ok(commentId);
 		}
 
@@ -79,9 +77,11 @@ namespace Zest.Controllers
 		[HttpGet]
 		public async Task<ActionResult<CommentViewModel[]>> GetCommentsByPost(int postId, [FromRoute] DateTime lastDate, int takeCount)
 		{
-			var comments = await _commentsService.GetCommentsByPostIdAsync(postId, lastDate, takeCount);
-			var viewModels = _mapper.Map<CommentViewModel[]>(comments);
-			return viewModels;
+			var user = User.Claims;
+			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var comments = await _commentsService.GetCommentsByPostIdAsync(postId, lastDate, takeCount, accountId);
+			
+			return comments;
 		}
 	}
 

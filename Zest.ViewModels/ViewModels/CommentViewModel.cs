@@ -14,6 +14,7 @@ namespace Zest.ViewModels.ViewModels
         public int Likes { get; set; }
         public int Dislikes { get; set; }
         public bool IsOwner { get; set; }
+        public LikeViewModel? Like { get; set; }
         public List<CommentViewModel> Replies { get; set; } = new List<CommentViewModel>();
         public DateTime PostedOn { get; set; }
     }

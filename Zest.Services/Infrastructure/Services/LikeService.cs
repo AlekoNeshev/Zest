@@ -44,26 +44,19 @@ namespace Zest.Services.Infrastructure.Services
 			await _context.SaveChangesAsync();
 		}
 
-		public async Task RemoveLikeFromPost(string accountId, int postId)
-		{
-			var like = _context.Likes.FirstOrDefault(l => l.AccountId == accountId && l.PostId == postId);
+		
 
+		public async Task RemoveLike(int likeId)
+		{
+			var like = await _context.Likes.FindAsync(likeId);
+			
 			if (like != null)
-			{
+			{				
 				_context.Likes.Remove(like);
 				await _context.SaveChangesAsync();
+						
 			}
-		}
-
-		public async Task RemoveLikeFromComment(string accountId, int commentId)
-		{
-			var like = _context.Likes.FirstOrDefault(l => l.AccountId == accountId && l.CommentId == commentId);
-
-			if (like != null)
-			{
-				_context.Likes.Remove(like);
-				await _context.SaveChangesAsync();
-			}
+		
 		}
 	}
 }

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using System.ComponentModel.Design;
 using System.Security.Claims;
 using Zest.DBModels;
 using Zest.DBModels.Models;
@@ -52,22 +53,24 @@ namespace Zest.Controllers
 			return Ok();
 		}
 
-		[Route("remove/post/{postId}/comment/{commentId}")]
+		[Route("remove/like/{likeId}/{postId}/{commentId}")]
 		[HttpDelete]
-		public async Task<ActionResult> Remove(int postId, int commentId)
+		public async Task<ActionResult> Remove(int likeId, int postId, int commentId)
 		{
 			var user = User.Claims;
 			var likerId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
-			if (postId != 0)
+			await _likeService.RemoveLike(likeId);
+
+			if (commentId == 0)
 			{
-				await _likeService.RemoveLikeFromPost(likerId, postId);
+				await _likesHubContext.Clients.Group(postId.ToString()).SendAsync("PostLiked", postId);
 			}
 			else if (commentId != 0)
 			{
-				await _likeService.RemoveLikeFromComment(likerId, commentId);
+				await _likesHubContext.Clients.Group(("pd-" + postId.ToString())).SendAsync("CommentLiked", commentId);
 			}
-
+		
 			return Ok();
 		}
 	}

@@ -9,6 +9,8 @@ using Zest.Services.Infrastructure.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Zest.ViewModels.ViewModels;
 using AutoMapper;
+using Microsoft.Identity.Client;
+using System.Globalization;
 
 namespace Zest.Services.Infrastructure.Services
 {
@@ -22,9 +24,11 @@ namespace Zest.Services.Infrastructure.Services
 			_mapper = mapper;
 		}
 
-		public async Task<Post> FindAsync(int id)
+		public async Task<PostViewModel> FindAsync(int id, string accountId)
 		{
-			return await _context.Posts.FindAsync(id);
+			var post =  _mapper.Map<PostViewModel>(await _context.Posts.FindAsync(id));
+			post.Like = _mapper.Map<LikeViewModel>(await _context.Likes.Where(x => x.AccountId == accountId && x.PostId == post.Id).FirstOrDefaultAsync()); ;
+			return post; ;
 		}
 
 		public async Task<Post> AddAsync(string title, string text, string accountId, int communityId)
@@ -58,30 +62,46 @@ namespace Zest.Services.Infrastructure.Services
 			await _context.SaveChangesAsync();
 		}
 
-		public async Task<List<Post>> GetByDateAsync(DateTime lastDate, int communityId, int takeCount)
+		public async Task<PostViewModel[]> GetByDateAsync(string accountId, DateTime lastDate, int communityId, int takeCount)
+		{
+
+			if (communityId != 0)
+			{
+				var posts = await _context.Posts
+			   .Where(x => x.CommunityId == communityId && x.CreatedOn < lastDate)
+			   .OrderByDescending(p => p.CreatedOn)
+			   .Take(takeCount)
+			   .ToArrayAsync();
+				var pvm = _mapper.Map<PostViewModel[]>(posts);
+				foreach (var item in pvm)
+				{
+					item.Like = _mapper.Map<LikeViewModel>(await _context.Likes.Where(x => x.AccountId == accountId && x.PostId == item.Id).FirstOrDefaultAsync());
+				}
+				return pvm;
+			}
+			else
+			{
+				var posts = await _context.Posts
+			   .Where(x => x.CreatedOn < lastDate)
+			   .OrderByDescending(p => p.CreatedOn)
+			   .Take(takeCount)
+			   .ToArrayAsync();
+				var pvm = _mapper.Map<PostViewModel[]>(posts);
+				foreach (var item in pvm)
+				{
+					item.Like = _mapper.Map<LikeViewModel>(await _context.Likes.Where(x => x.AccountId == accountId && x.PostId == item.Id).FirstOrDefaultAsync());
+				}
+				return pvm;
+			}
+		}
+		public async Task<PostViewModel[]> GetTrending(int[] skipIds, int takeCount, string accountId, int communityId = 0)
 		{
 			
-			if(communityId != 0)
-			{
-				return await _context.Posts
-				.Where(x => x.CommunityId == communityId && x.CreatedOn < lastDate)
-				.OrderByDescending(p => p.CreatedOn)
-				.Take(takeCount)
-				.ToListAsync();
-			}
-			return await _context.Posts
-				.Where(x => x.CreatedOn < lastDate)
-				.OrderByDescending(p => p.CreatedOn)
-				.Take(takeCount)
-				.ToListAsync();
-		}
-		public async Task<List<PostViewModel>> GetTrending(int[] skipIds, int takeCount, int communityId = 0)
-		{
 			var cutoffDate = DateTime.UtcNow - TimeSpan.FromHours(72);
-			var posts = _context.Posts.Where(x => x.CreatedOn >= cutoffDate).ToList();
-			if(communityId > 0)
+			var posts = await _context.Posts.Where(x => x.CreatedOn >= cutoffDate).ToArrayAsync();
+			if (communityId > 0)
 			{
-				posts = posts.Where(x=>x.CommunityId == communityId).ToList();
+				posts = posts.Where(x => x.CommunityId == communityId).ToArray();
 			}
 			var likeWeight = 1.0;
 			var commentWeight = 0.5;
@@ -91,28 +111,36 @@ namespace Zest.Services.Infrastructure.Services
 
 			var filteredScores = scores.Where(s => !skipIds.Contains(s.Post.Id)).OrderByDescending(s => s.Score);
 
-			var trendingPosts = _mapper.Map<List<PostViewModel>>(filteredScores.Take(takeCount).Select(x=>x.Post).ToList());
-
+			var trendingPosts = _mapper.Map<PostViewModel[]>(filteredScores.Take(takeCount).Select(x => x.Post).ToArray());
+			foreach (var item in trendingPosts)
+			{
+				item.Like = _mapper.Map<LikeViewModel>(await _context.Likes.Where(x => x.AccountId == accountId && x.PostId == item.Id ).FirstOrDefaultAsync());
+			}
 			return trendingPosts;
 		}
-		public async Task<List<PostViewModel>> GetFollowedPostsAsync(int[] skipIds, int takeCount, string accountId)
+		public async Task<PostViewModel[]> GetFollowedPostsAsync(int[] skipIds, int takeCount, string accountId)
 		{
-			var followedUserIds = _context.Followers
-	.Where(f => f.FollowerId == accountId)
-	.Select(f => f.FollowedId)
-	.ToList();
-			var followedCommunityIds = _context.CommunityFollowers
-	.Where(cf => cf.AccountId == accountId)
-	.Select(cf => cf.CommunityId)
-	.ToList();
-			var posts = _mapper.Map<List<PostViewModel>>(_context.Posts
-	.Where(p =>
-		followedUserIds.Contains(p.AccountId) ||
-		followedCommunityIds.Contains(p.CommunityId))
-	.Where(p => !skipIds.Contains(p.Id))
-	.OrderByDescending(p => p.CreatedOn)
-	.Take(takeCount)
-	.ToList());
+
+			var followedUserIds = await _context.Followers
+				.Where(f => f.FollowerId == accountId)
+				.Select(f => f.FollowedId)
+				.ToArrayAsync();
+			var followedCommunityIds = await _context.CommunityFollowers
+				.Where(cf => cf.AccountId == accountId)
+				.Select(cf => cf.CommunityId)
+				.ToArrayAsync();
+			var posts = _mapper.Map<PostViewModel[]>(await _context.Posts
+				.Where(p =>
+					followedUserIds.Contains(p.AccountId) ||
+					followedCommunityIds.Contains(p.CommunityId))
+				.Where(p => !skipIds.Contains(p.Id))
+				.OrderByDescending(p => p.CreatedOn)
+				.Take(takeCount)
+				.ToArrayAsync());
+			foreach (var item in posts)
+			{
+				item.Like = _mapper.Map<LikeViewModel>(await _context.Likes.Where(x => x.AccountId == accountId&& x.PostId == item.Id).FirstOrDefaultAsync());
+			}
 			return posts;
 		}
 		private double CalculateScore(Post post, double likeWeight, double commentWeight, double decayFactor)
@@ -123,21 +151,26 @@ namespace Zest.Services.Infrastructure.Services
 
 			return likeScore + commentScore;
 		}
-		public async Task<List<Post>> GetByCommunityAsync(int communityId)
+		public async Task<Post[]> GetByCommunityAsync(int communityId)
 		{
 			return await _context.Posts
 				.Where(x => x.CommunityId == communityId)
 				.OrderByDescending(x => x.CreatedOn)
-				.ToListAsync();
+				.ToArrayAsync();
 		}
 
-		public async Task<List<Post>> GetBySearchAsync(string search)
+		public async Task<PostViewModel[]> GetBySearchAsync(string search, string accountId)
 		{
-			return await _context.Posts
+			var posts = _mapper.Map<PostViewModel[]>( await _context.Posts
 				.OrderByDescending(x => x.Title.Contains(search))
 				.ThenByDescending(x => x.Text.Contains(search))
 				.ThenByDescending(x => x.CreatedOn)
-				.ToListAsync();
+				.ToListAsync());
+			foreach (var item in posts)
+			{
+				item.Like = _mapper.Map<LikeViewModel>(await _context.Likes.Where(x => x.AccountId == accountId&& x.PostId == item.Id).FirstOrDefaultAsync());
+			}
+			return posts;
 		}
 
 		public async Task<bool> IsOwnerAsync(int postId, string accountId)
