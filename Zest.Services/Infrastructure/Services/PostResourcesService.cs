@@ -1,17 +1,11 @@
 ﻿using AutoMapper;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using Zest.DBModels.Models;
+using HeyRed.Mime;
+using Microsoft.AspNetCore.Http;
 using Zest.DBModels;
+using Zest.DBModels.Models;
+using Zest.Services.ActionResult;
 using Zest.Services.Infrastructure.Interfaces;
 using Zest.ViewModels.ViewModels;
-using Microsoft.EntityFrameworkCore;
-using System.Web.Mvc;
-using Microsoft.AspNetCore.Http;
 
 namespace Zest.Services.Infrastructure.Services
 {
@@ -45,7 +39,7 @@ namespace Zest.Services.Infrastructure.Services
 			{
 
 
-				var type = GetMimeTypeByWindowsRegistry(postedFile.FileName);
+				var type = MimeTypesMap.GetMimeType(postedFile.FileName);
 				if (!string.Equals(type, "image/jpg", StringComparison.OrdinalIgnoreCase) &&
 				   !string.Equals(type, "image/jpeg", StringComparison.OrdinalIgnoreCase) &&
 				   !string.Equals(type, "image/pjpeg", StringComparison.OrdinalIgnoreCase) &&
@@ -69,7 +63,7 @@ namespace Zest.Services.Infrastructure.Services
 				}
 
 				var newName = Guid.NewGuid().ToString();
-				var uploads = Path.Combine(Assembly.GetEntryAssembly().Location.Replace("Zest.dll", ""), "uploads");
+				var uploads = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "uploads");
 
 				if (!Directory.Exists(uploads))
 				{
@@ -100,13 +94,16 @@ namespace Zest.Services.Infrastructure.Services
 			return "Shiish";
 		}
 
-		public async Task<FileResult> GetFileAsync(string fileName)
+		public async Task<CustomFileStreamResult> GetFileAsync(string fileName)
 		{
-			var uploads = Path.Combine(Assembly.GetEntryAssembly().Location.Replace("Zest.dll", ""), "uploads");
+			var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+			var uploads = Path.Combine(baseDirectory, "uploads");
 			var filePath = Path.Combine(uploads, fileName);
-			var mimeType = GetMimeTypeByWindowsRegistry(fileName.Split(".").Last());
+			var mimeType = MimeTypesMap.GetMimeType(fileName);
 			var fileStream = System.IO.File.OpenRead(filePath);
-			return new FileStreamResult(fileStream, mimeType);
+
+			
+			return new CustomFileStreamResult(fileStream, mimeType);
 		}
 
 		public async Task<PostRescourcesViewModel[]> GetPostResourcesByPostIdAsync(int postId)
@@ -126,14 +123,7 @@ namespace Zest.Services.Infrastructure.Services
 			return fileResults.ToArray();
 		}
 
-		private static string GetMimeTypeByWindowsRegistry(string fileNameOrExtension)
-		{
-			string mimeType = "application/unknown";
-			string ext = (fileNameOrExtension.Contains(".")) ? System.IO.Path.GetExtension(fileNameOrExtension).ToLower() : "." + fileNameOrExtension;
-			Microsoft.Win32.RegistryKey regKey = Microsoft.Win32.Registry.ClassesRoot.OpenSubKey(ext);
-			if (regKey != null && regKey.GetValue("Content Type") != null) mimeType = regKey.GetValue("Content Type").ToString();
-			return mimeType;
-		}
+		
 	}
 
 }

@@ -5,8 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Zest.DBModels.Models;
 using Zest.ViewModels.ViewModels;
-using System.Web.Mvc;
 using Microsoft.AspNetCore.Http;
+using Zest.Services.ActionResult;
 namespace Zest.Services.Infrastructure.Interfaces
 {
 	public interface IPostResourcesService
@@ -14,7 +14,7 @@ namespace Zest.Services.Infrastructure.Interfaces
 		Task<PostRescourcesViewModel> GetPostResourceByIdAsync(int id);
 		Task<PostResources> AddPostResourceAsync(PostResources postResource);
 		Task<string> UploadFileAsync(int postId, IFormFileCollection postedFile);
-		Task<FileResult> GetFileAsync(string fileName);
+		Task<CustomFileStreamResult> GetFileAsync(string fileName);
 		Task<PostRescourcesViewModel[]> GetPostResourcesByPostIdAsync(int postId);
 	}
 }

@@ -1,12 +1,8 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.IO;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using Zest.DBModels;
-using Zest.DBModels.Models;
+using Zest.Services.ActionResult;
 using Zest.Services.Infrastructure.Interfaces;
 using Zest.ViewModels.ViewModels;
 
@@ -17,13 +13,11 @@ namespace Zest.Controllers
 	
 	public class PostRescourcesController : Controller
 	{
-		private ZestContext context;
-		private IMapper mapper;
+		
 		private IPostResourcesService _postResourceService;
-        public PostRescourcesController(ZestContext zestContext, IMapper mapper, IPostResourcesService postResourcesService)
+        public PostRescourcesController(IPostResourcesService postResourcesService)
         {
-            this.context = zestContext;
-			this.mapper = mapper;
+           
 			this._postResourceService = postResourcesService;
         }
 		
@@ -32,7 +26,7 @@ namespace Zest.Controllers
 		public async Task<IActionResult> UploadFile(int postId, IFormFileCollection postedFiles)
 		{
 			
-			var file = await _postResourceService.UploadFileAsync(postId, postedFiles);
+			 await _postResourceService.UploadFileAsync(postId, postedFiles);
 
 			return Ok();
 		}
@@ -40,18 +34,12 @@ namespace Zest.Controllers
 		[HttpGet("ivan/{fileName}")]
 		public async Task<FileResult> GetFile(string fileName)
 		{
-			string uploads = Path.Combine(Assembly.GetEntryAssembly().Location.Replace("Zest.dll", ""), "uploads");
-			return File(System.IO.File.OpenRead(Path.Combine(uploads, fileName)), GetMimeTypeByWindowsRegistry(fileName.Split(".").Last()));
+			CustomFileStreamResult customFileStreamResult = await _postResourceService.GetFileAsync(fileName);
+			
+			return File(customFileStreamResult.Stream, customFileStreamResult.ContentType);
 		}
 
-		public static string GetMimeTypeByWindowsRegistry(string fileNameOrExtension)
-		{
-			string mimeType = "application/unknown";
-			string ext = (fileNameOrExtension.Contains(".")) ? System.IO.Path.GetExtension(fileNameOrExtension).ToLower() : "." + fileNameOrExtension;
-			Microsoft.Win32.RegistryKey regKey = Microsoft.Win32.Registry.ClassesRoot.OpenSubKey(ext);
-			if (regKey != null && regKey.GetValue("Content Type") != null) mimeType = regKey.GetValue("Content Type").ToString();
-			return mimeType;
-		}
+		
 		[HttpGet("getByPostId/{postId}")]
 		public async Task<PostRescourcesViewModel[]> GetPhotos(int postId)
 		{

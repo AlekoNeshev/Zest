@@ -1,18 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Zest.DBModels.Models;
-using Zest.DBModels;
-using Zest.Services.Infrastructure.Interfaces;
+﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Zest.ViewModels.ViewModels;
-using AutoMapper;
-using Microsoft.Identity.Client;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using NodaTime;
-using NodaTime.Extensions;
+using Zest.DBModels;
+using Zest.DBModels.Models;
+using Zest.Services.Infrastructure.Interfaces;
+using Zest.ViewModels.ViewModels;
 
 namespace Zest.Services.Infrastructure.Services
 {
@@ -67,13 +59,14 @@ namespace Zest.Services.Infrastructure.Services
 		public async Task<CommentViewModel[]> GetCommentsByPostIdAsync(int postId, DateTime lastDate, int takeCount, string accountId)
 		{
 			
+
+			var comments = _mapper.Map<CommentViewModel[]>( await _context.Comments
+		.Include(x => x.Replies) // Eagerly load replies
 			
-			var comments = _mapper.Map<CommentViewModel[]>(await _context.Comments
-				
-				.Where(x => x.PostId == postId && x.CommentId == null && x.CreatedOn < lastDate)
-				.OrderBy(x=>x.CreatedOn)
-				.Take(takeCount)
-				.ToArrayAsync());
+		.Where(x => x.PostId == postId && x.CommentId == null && x.CreatedOn < lastDate)
+		.OrderBy(x => x.CreatedOn)
+		.Take(takeCount)
+		.ToListAsync());
 			foreach (var comment in comments)
 			{
 				comment.Like = _mapper.Map<LikeViewModel>(await _context.Likes.Where(x => x.AccountId == accountId && x.CommentId == comment.Id).FirstOrDefaultAsync());

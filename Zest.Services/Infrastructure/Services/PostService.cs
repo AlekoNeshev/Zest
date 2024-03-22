@@ -1,16 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Zest.DBModels.Models;
-using Zest.DBModels;
-using Zest.Services.Infrastructure.Interfaces;
+﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Zest.DBModels;
+using Zest.DBModels.Models;
+using Zest.Services.Infrastructure.Interfaces;
 using Zest.ViewModels.ViewModels;
-using AutoMapper;
-using Microsoft.Identity.Client;
-using System.Globalization;
 
 namespace Zest.Services.Infrastructure.Services
 {

@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using System.Text.RegularExpressions;
-using Zest.Services.Infrastructure.Interfaces;
+﻿using Zest.Services.Infrastructure.Interfaces;
 
 namespace Zest.Services.Infrastructure.Services
 {

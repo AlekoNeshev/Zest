@@ -1,13 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Identity.Client;
 using System.Security.Claims;
-using Zest.DBModels;
-using Zest.DBModels.Models;
 using Zest.Services.Infrastructure.Interfaces;
-using Zest.Services.Infrastructure.Services;
 using Zest.ViewModels.ViewModels;
 namespace Zest.Controllers
 {
