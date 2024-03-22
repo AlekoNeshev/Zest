@@ -27,12 +27,12 @@ namespace Zest.Services.Infrastructure.Services
 
 		public async Task<List<Account>> GetModeratorsByCommunityAsync(int communityId)
 		{
-			return await context.CommunityModerators.Where(x => x.CommunityId == communityId && x.IsApproved == true).Select(x => x.Account).ToListAsync();
+			return await context.CommunityModerators.Where(x => x.CommunityId == communityId && x.IsApproved == true).Include(x=>x.Account).Select(x => x.Account).ToListAsync();
 		}
 
 		public async Task<List<Account>> GetModeratorCandidatesByCommunityAsync(int communityId)
 		{
-			return await context.CommunityModerators.Where(x => x.CommunityId == communityId && x.IsApproved == false).Select(x => x.Account).ToListAsync();
+			return await context.CommunityModerators.Where(x => x.CommunityId == communityId && x.IsApproved == false).Include(x => x.Account).Select(x => x.Account).ToListAsync();
 		}
 
 		public async Task ApproveCandidateAsync(string accountId, int communityId)

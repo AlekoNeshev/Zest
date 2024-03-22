@@ -21,7 +21,13 @@ namespace Zest.Services.Infrastructure.Services
 
 		public async Task<CommentViewModel> FindAsync(int id, string accountId)
 		{
-			var comment = _mapper.Map<CommentViewModel>(await _context.Comments.FindAsync(id));
+			var comment = _mapper.Map<CommentViewModel>(await _context.Comments.Include(x => x.Account)
+		.Include(x => x.Likes)
+
+		.Include(x => x.Replies)
+		.ThenInclude(r => r.Replies)
+		.ThenInclude(r => r.Replies)
+		.ThenInclude(r => r.Replies).FirstOrDefaultAsync(x=>x.Id == id));
 			comment.Like = _mapper.Map<LikeViewModel>(await _context.Likes.Where(x => x.AccountId == accountId && x.CommentId == comment.Id).FirstOrDefaultAsync());
 			return comment;
 		}
@@ -61,9 +67,16 @@ namespace Zest.Services.Infrastructure.Services
 			
 
 			var comments = _mapper.Map<CommentViewModel[]>( await _context.Comments
-		.Include(x => x.Replies) // Eagerly load replies
+		
 			
 		.Where(x => x.PostId == postId && x.CommentId == null && x.CreatedOn < lastDate)
+		.Include(x=>x.Account)
+		.Include(x=>x.Likes)
+		
+		.Include(x => x.Replies)
+		.ThenInclude(r=>r.Replies)
+		.ThenInclude(r => r.Replies)
+		.ThenInclude(r => r.Replies)// Eagerly load replies
 		.OrderBy(x => x.CreatedOn)
 		.Take(takeCount)
 		.ToListAsync());

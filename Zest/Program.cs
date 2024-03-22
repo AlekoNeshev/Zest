@@ -46,7 +46,7 @@ namespace Zest
 			{
 				bl.AddProfile(new MappingProfile());
 			});
-			builder.Services.AddDbContext<ZestContext>(b => b.UseLazyLoadingProxies());
+			builder.Services.AddDbContext<ZestContext>();
 
 			builder.Services.AddAuthentication(options =>
 			{

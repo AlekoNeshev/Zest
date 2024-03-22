@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Zest.DBModels;
 using Zest.DBModels.Models;
 using Zest.Services.Infrastructure.Interfaces;
@@ -19,12 +20,12 @@ namespace Zest.Services.Infrastructure.Services
 
 		public async Task<Community> GetCommunityByIdAsync(int id)
 		{
-			return await _context.Communities.FindAsync(id);
+			return await _context.Communities.Include(x=>x.Creator).FirstOrDefaultAsync(x=>x.Id == id);
 		}
 
 		public async Task<Community[]> GetAllCommunitiesAsync(string accountId)
 		{
-			var communities = _context.Communities.ToArray();
+			var communities = _context.Communities.Include(x => x.Creator).ToArray();
 			
 			return communities;
 		}
@@ -54,7 +55,7 @@ namespace Zest.Services.Infrastructure.Services
 		}
 		public async Task<CommunityViewModel[]> GetCommunitiesByAccount(string accountId)
 		{
-			return _mapper.Map<CommunityViewModel[]>(_context.CommunityFollowers.Where(x => x.AccountId==accountId).Select(x => x.Community).ToArray());
+			return _mapper.Map<CommunityViewModel[]>(_context.CommunityFollowers.Where(x => x.AccountId==accountId).Include(x=>x.Community).Select(x => x.Community).Include(x=>x.Creator).Include(x=>x.Posts).ToArray());
 		}
 		public async Task<CommunityViewModel[]> GetTrendingCommunities(int[] skipIds, int takeCount)
 		{
