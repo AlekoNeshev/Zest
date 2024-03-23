@@ -55,7 +55,8 @@ namespace Zest.Services.Infrastructure.Services
 		}
 		public async Task<CommunityViewModel[]> GetCommunitiesByAccount(string accountId)
 		{
-			return _mapper.Map<CommunityViewModel[]>(_context.CommunityFollowers.Where(x => x.AccountId==accountId).Include(x=>x.Community).Select(x => x.Community).Include(x=>x.Creator).Include(x=>x.Posts).ToArray());
+			
+			return _mapper.Map<CommunityViewModel[]>(_context.CommunityFollowers.Where(x => x.AccountId==accountId).Include(x=>x.Community).Select(x => x.Community).ToArray());
 		}
 		public async Task<CommunityViewModel[]> GetTrendingCommunities(int[] skipIds, int takeCount)
 		{
