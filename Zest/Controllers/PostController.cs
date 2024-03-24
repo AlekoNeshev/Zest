@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
+using Zest.Services.Hubs;
 using Zest.Services.Infrastructure.Interfaces;
 using Zest.ViewModels.ViewModels;
 
@@ -14,11 +16,13 @@ namespace Zest.Controllers
     {
 		private readonly IPostService _postService;
 		private readonly IMapper _mapper;
+		private readonly IHubContext<CommentsHub> _hubContext;
 
-		public PostController(IPostService postService, IMapper mapper)
+		public PostController(IPostService postService, IMapper mapper, IHubContext<CommentsHub> hubContext)
 		{
 			_postService = postService;
 			_mapper = mapper;
+			_hubContext = hubContext;
 		}
 
 		[Route("{id}")]
@@ -55,6 +59,7 @@ namespace Zest.Controllers
 			}
 
 			await _postService.RemoveAsync(postId);
+			await _hubContext.Clients.Group("comment-" +  postId.ToString()).SendAsync("PostDeleted", postId);
 			return Ok();
 		}
 

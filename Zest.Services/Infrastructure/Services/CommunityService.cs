@@ -18,16 +18,17 @@ namespace Zest.Services.Infrastructure.Services
 			_mapper = mapper;
 		}
 
-		public async Task<Community> GetCommunityByIdAsync(int id)
+		public async Task<CommunityViewModel> GetCommunityByIdAsync(int id)
 		{
-			return await _context.Communities.Include(x=>x.Creator).FirstOrDefaultAsync(x=>x.Id == id);
+			return _mapper.Map<CommunityViewModel>(await _context.Communities.Include(x=>x.Creator).FirstOrDefaultAsync(x=>x.Id == id));
+
 		}
 
-		public async Task<Community[]> GetAllCommunitiesAsync(string accountId)
+		public async Task<CommunityViewModel[]> GetAllCommunitiesAsync(string accountId)
 		{
-			var communities = _context.Communities.Include(x => x.Creator).ToArray();
+			var communities = await _context.Communities.Include(x => x.Creator).ToArrayAsync();
 			
-			return communities;
+			return _mapper.Map<CommunityViewModel[]>(communities);
 		}
 
 		public async Task<int> AddCommunityAsync(string creatorId, string name, string discription)
@@ -62,7 +63,7 @@ namespace Zest.Services.Infrastructure.Services
 		{
 			
 
-			var filteredCommunities = _context.Communities.Where(c => !skipIds.Contains(c.Id)).ToArray();
+			var filteredCommunities = _context.Communities.Include(x=>x.Posts).ThenInclude(x=>x.Comments).Include(x=>x.Creator).Where(c => !skipIds.Contains(c.Id)).ToArray();
 
 
 			var communityScores = new List<(Community Community, int Score)>();

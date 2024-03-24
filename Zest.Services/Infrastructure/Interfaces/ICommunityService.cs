@@ -10,8 +10,8 @@ namespace Zest.Services.Infrastructure.Interfaces
 {
 	public interface ICommunityService
 	{
-		Task<Community> GetCommunityByIdAsync(int id);
-		Task<Community[]> GetAllCommunitiesAsync(string accountId);
+		Task<CommunityViewModel> GetCommunityByIdAsync(int id);
+		Task<CommunityViewModel[]> GetAllCommunitiesAsync(string accountId);
 		Task<int> AddCommunityAsync(string creatorId, string name, string discription);
 		Task<CommunityViewModel[]> GetCommunitiesByAccount(string accountId);
 		Task<CommunityViewModel[]> GetTrendingCommunities(int[] skipIds, int takeCount);

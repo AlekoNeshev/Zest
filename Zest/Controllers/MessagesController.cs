@@ -16,13 +16,12 @@ namespace Zest.Controllers
     {
 		private readonly IMessageService _messageService;
 		private readonly IHubContext<MessageHub> _hubContext;
-		private readonly IMapper _mapper;
 
-		public MessagesController(IMessageService messageService, IHubContext<MessageHub> hubContext, IMapper mapper)
+		public MessagesController(IMessageService messageService, IHubContext<MessageHub> hubContext)
 		{
 			_messageService = messageService;
 			_hubContext = hubContext;
-			_mapper = mapper;
+			
 		}
 
 		[Route("get/{id}")]
@@ -30,7 +29,7 @@ namespace Zest.Controllers
 		public async Task<ActionResult<MessageViewModel>> Find(int id)
 		{
 			var message = await _messageService.FindAsync(id);
-			return _mapper.Map<MessageViewModel>(message);
+			return message;
 		}
 
 		[Route("get/receiver/{receiverId}/{takeCount}/{date}")]
@@ -40,7 +39,7 @@ namespace Zest.Controllers
 			var user = User.Claims;
 			var senderId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 			var messages = await _messageService.GetMessagesBySenderAndReceiverIdsAsync(senderId, receiverId, takeCount, date);
-			return _mapper.Map<MessageViewModel[]>(messages.ToArray());
+			return messages.ToArray();
 		}
 
 		[Route("add/receiver/{receiverId}")]

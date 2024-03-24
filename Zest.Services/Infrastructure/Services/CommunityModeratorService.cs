@@ -1,17 +1,20 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Zest.DBModels;
 using Zest.DBModels.Models;
 using Zest.Services.Infrastructure.Interfaces;
+using Zest.ViewModels.ViewModels;
 
 namespace Zest.Services.Infrastructure.Services
 {
 	public class CommunityModeratorService : ICommunityModeratorService
 	{
 		private readonly ZestContext context;
-
-		public CommunityModeratorService(ZestContext context)
+		private readonly IMapper _mapper;
+		public CommunityModeratorService(ZestContext context, IMapper mapper)
 		{
 			this.context = context;
+			this._mapper = mapper;
 		}
 		public async Task<bool> IsModeratorAsync(string accountId, int communityId)
 		{
@@ -25,14 +28,14 @@ namespace Zest.Services.Infrastructure.Services
 			await context.SaveChangesAsync();
 		}
 
-		public async Task<List<Account>> GetModeratorsByCommunityAsync(int communityId)
+		public async Task<UserViewModel[]> GetModeratorsByCommunityAsync(int communityId)
 		{
-			return await context.CommunityModerators.Where(x => x.CommunityId == communityId && x.IsApproved == true).Include(x=>x.Account).Select(x => x.Account).ToListAsync();
+			return _mapper.Map<UserViewModel[]>(await context.CommunityModerators.Where(x => x.CommunityId == communityId && x.IsApproved == true).Include(x=>x.Account).Select(x => x.Account).ToListAsync());
 		}
 
-		public async Task<List<Account>> GetModeratorCandidatesByCommunityAsync(int communityId)
+		public async Task<UserViewModel[]> GetModeratorCandidatesByCommunityAsync(int communityId)
 		{
-			return await context.CommunityModerators.Where(x => x.CommunityId == communityId && x.IsApproved == false).Include(x => x.Account).Select(x => x.Account).ToListAsync();
+			return _mapper.Map<UserViewModel[]>(await context.CommunityModerators.Where(x => x.CommunityId == communityId && x.IsApproved == false).Include(x => x.Account).Select(x => x.Account).ToListAsync());
 		}
 
 		public async Task ApproveCandidateAsync(string accountId, int communityId)

@@ -19,7 +19,7 @@ namespace Zest.Services.Infrastructure.Services
 
 		public async Task<PostViewModel> FindAsync(int id, string accountId)
 		{
-			var post =  _mapper.Map<PostViewModel>(await _context.Posts.FindAsync(id));
+			var post =  _mapper.Map<PostViewModel>(await _context.Posts.Include(x=>x.Likes).Include(x=>x.Account).FirstOrDefaultAsync(x=>x.Id == id));
 			post.Like = _mapper.Map<LikeViewModel>(await _context.Likes.Where(x => x.AccountId == accountId && x.PostId == post.Id).FirstOrDefaultAsync()); ;
 			return post; ;
 		}
@@ -62,6 +62,9 @@ namespace Zest.Services.Infrastructure.Services
 			{
 				var posts = await _context.Posts
 			   .Where(x => x.CommunityId == communityId && x.CreatedOn < lastDate)
+			   .Include(x => x.Likes)
+				.Include(x => x.Account)
+				.Include(x => x.Community)
 			   .OrderByDescending(p => p.CreatedOn)
 			   .Take(takeCount)
 			   .ToArrayAsync();
@@ -76,6 +79,9 @@ namespace Zest.Services.Infrastructure.Services
 			{
 				var posts = await _context.Posts
 			   .Where(x => x.CreatedOn < lastDate)
+			   .Include(x => x.Likes)
+				.Include(x => x.Account)
+				.Include(x => x.Community)
 			   .OrderByDescending(p => p.CreatedOn)
 			   .Take(takeCount)
 			   .ToArrayAsync();
@@ -91,7 +97,8 @@ namespace Zest.Services.Infrastructure.Services
 		{
 			
 			var cutoffDate = DateTime.UtcNow - TimeSpan.FromHours(72);
-			var posts = await _context.Posts.Where(x => x.CreatedOn >= cutoffDate).ToArrayAsync();
+			var posts = await _context.Posts.Where(x => x.CreatedOn >= cutoffDate).Include(x => x.Likes)
+				.Include(x => x.Account).Include(x=>x.Community).ToArrayAsync();
 			if (communityId > 0)
 			{
 				posts = posts.Where(x => x.CommunityId == communityId).ToArray();
@@ -127,6 +134,9 @@ namespace Zest.Services.Infrastructure.Services
 					followedUserIds.Contains(p.AccountId) ||
 					followedCommunityIds.Contains(p.CommunityId))
 				.Where(p => !skipIds.Contains(p.Id))
+				.Include(x=>x.Likes)
+				.Include(x=>x.Account)
+				.Include(x => x.Community)
 				.OrderByDescending(p => p.CreatedOn)
 				.Take(takeCount)
 				.ToArrayAsync());

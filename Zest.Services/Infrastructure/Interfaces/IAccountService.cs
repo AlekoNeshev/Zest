@@ -11,8 +11,8 @@ namespace Zest.Services.Infrastructure.Interfaces
 {
 	public interface IAccountService
 	{
-		Task<Account> FindByIdAsync(string id);
-		Task<EntityEntry<Account>> AddAsync(string accountId, string name, string email);
-		Task<Account[]> GetAllAsync(string accountId);
+		Task<AccountViewModel> FindByIdAsync(string id);
+		Task<AccountViewModel> AddAsync(string accountId, string name, string email);
+		Task<UserViewModel[]> GetAllAsync(string accountId);
 	}
 }

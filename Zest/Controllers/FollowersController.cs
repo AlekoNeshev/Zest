@@ -17,12 +17,10 @@ namespace Zest.Controllers
     public class FollowersController : ControllerBase
     {
 		private readonly IFollowerService _followerService;
-		private readonly IMapper _mapper;
-
-		public FollowersController(IFollowerService followerService, IMapper mapper)
+		
+		public FollowersController(IFollowerService followerService)
 		{
 			_followerService = followerService;
-			_mapper = mapper;
 		}
 
 		[Route("followers/find/{followerId}/{followedId}")]
@@ -30,7 +28,7 @@ namespace Zest.Controllers
 		public async Task<ActionResult<FollowerViewModel>> Find(string followerId, string followedId)
 		{
 			var follower = await _followerService.FindAsync(followerId, followedId);
-			return _mapper.Map<FollowerViewModel>(follower);
+			return follower;
 		}
 
 		[Route("add/followed/{followedId}")]
@@ -55,13 +53,12 @@ namespace Zest.Controllers
 
 		[Route("getFriends")]
 		[HttpGet]
-		public async Task<ActionResult<List<FollowerViewModel>>> FindFriends()
+		public async Task<ActionResult<FollowerViewModel[]>> FindFriends()
 		{
 			var user = User.Claims;
 			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 			var followers = await _followerService.FindFriendsAsync(accountId);
-			var viewModels = _mapper.Map<List<FollowerViewModel>>(followers);
-			return viewModels;
+			return followers;
 		}
 	}
 }

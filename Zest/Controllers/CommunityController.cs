@@ -18,13 +18,13 @@ namespace Zest.Controllers
     {
 		private readonly ICommunityService _communityService;
 		private readonly ICommunityFollowerService _communityFollowerService;
-		private readonly IMapper _mapper;
+		
 
-		public CommunityController(ICommunityService communityService, ICommunityFollowerService communityFollowerService,IMapper mapper)
+		public CommunityController(ICommunityService communityService, ICommunityFollowerService communityFollowerService)
 		{
 			_communityService = communityService;
 			_communityFollowerService = communityFollowerService;
-			_mapper = mapper;
+			
 		}
 
 		[Route("{id}")]
@@ -32,7 +32,7 @@ namespace Zest.Controllers
 		public async Task<ActionResult<CommunityViewModel>> Find(int id)
 		{
 			var community = await _communityService.GetCommunityByIdAsync(id);
-			return _mapper.Map<CommunityViewModel>(community);
+			return community;
 		}
 
 		[Route("getAll")]
@@ -41,12 +41,11 @@ namespace Zest.Controllers
 		{
 			var accountId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			var communities = await _communityService.GetAllCommunitiesAsync(accountId);
-		 var communityViewModels = _mapper.Map<CommunityViewModel[]>(communities);
-			foreach (var item in communityViewModels)
+			foreach (var item in communities)
 			{
 				item.IsSubscribed = await  _communityFollowerService.DoesExistAsync(accountId, item.Id);
 			}
-			return communityViewModels;
+			return communities;
 		}
 
 		[Route("add/{name}")]

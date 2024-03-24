@@ -27,7 +27,7 @@ namespace Zest.Services.Infrastructure.Services
 
 					await _messageHubContext.Groups.AddToGroupAsync(connectionId, item);
 				}
-				else if (item.Contains("message"))
+				else if (item.Contains("comment"))
 				{
 					await _commentsHubContext.Groups.AddToGroupAsync(connectionId, item);
 

@@ -8,6 +8,7 @@ using Microsoft.Identity.Client;
 using System.Security.Claims;
 using Zest.DBModels;
 using Zest.DBModels.Models;
+using Zest.Services.Hubs;
 using Zest.Services.Infrastructure.Interfaces;
 using Zest.ViewModels.ViewModels;
 
@@ -19,13 +20,13 @@ namespace Zest.Controllers
     public class CommentsController : ControllerBase
     {
 		private readonly ICommentsService _commentsService;
-	
-		private readonly IMapper _mapper;
+		private readonly IHubContext<CommentsHub> _commentsHubContext;
 
-		public CommentsController(ICommentsService commentsService, IMapper mapper)
+
+		public CommentsController(ICommentsService commentsService, IHubContext<CommentsHub> hubContext)
 		{
 			_commentsService = commentsService;
-			_mapper = mapper;
+			_commentsHubContext = hubContext;
 			
 		}
 
@@ -66,10 +67,9 @@ namespace Zest.Controllers
 		[Route("remove/{commentId}")]
 		[HttpPut]
 		public async Task<ActionResult> Remove(int commentId)
-		{
-			
-			
-			await _commentsService.RemoveAsync(commentId);
+		{		
+			var postId = await _commentsService.RemoveAsync(commentId);
+			await _commentsHubContext.Clients.Group(("comment-" + postId.ToString())).SendAsync("CommentDeleted", commentId);
 			return Ok(commentId);
 		}
 

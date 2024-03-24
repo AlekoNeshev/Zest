@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Zest.DBModels;
 using Zest.DBModels.Models;
 using Zest.Services.Infrastructure.Interfaces;
+using Zest.ViewModels.ViewModels;
 
 namespace Zest.Services.Infrastructure.Services
 {
@@ -17,13 +19,13 @@ namespace Zest.Services.Infrastructure.Services
 			_mapper = mapper;
 		}
 
-		public async Task<Account> FindByIdAsync(string id)
+		public async Task<AccountViewModel> FindByIdAsync(string id)
 		{
-			var account =_zestContext.Accounts.Where(x => x.Id == id).FirstOrDefault();
+			var account =_mapper.Map<AccountViewModel>(await _zestContext.Accounts.Where(x => x.Id == id).FirstOrDefaultAsync());
 			return account;
 		}
 
-		public async Task<EntityEntry<Account>> AddAsync(string accountId,string username, string email)
+		public async Task<AccountViewModel> AddAsync(string accountId,string username, string email)
 		{
 			var newAccount = await _zestContext.AddAsync(new Account
 			{
@@ -35,15 +37,24 @@ namespace Zest.Services.Infrastructure.Services
 			});
 			 await _zestContext.SaveChangesAsync();
 			
-			return newAccount;
+			return _mapper.Map<AccountViewModel>(newAccount.Entity); ;
 		}
 
-		public async Task<Account[]> GetAllAsync(string accountId)
+		public async Task<UserViewModel[]> GetAllAsync(string accountId)
 		{
 			
-			var accounts = _zestContext.Accounts.Where(x=>x.Id != accountId).ToArray();
-			
+			var accounts = _mapper.Map<UserViewModel[]>(await _zestContext.Accounts.Where(x=>x.Id != accountId).ToArrayAsync());
+			foreach (var item in accounts)
+			{
+
+
+				item.IsFollowed = await FindFollowerAsync(accountId, item.Id) != null;
+			}
 			return accounts;
+		}
+		private async Task<Follower> FindFollowerAsync(string followerId, string followedId)
+		{
+			return await _zestContext.Followers.Include(x => x.Followed).Include(x => x.FollowerNavigation).FirstOrDefaultAsync(x => x.FollowerId == followerId && x.FollowedId == followedId);
 		}
 	}
 

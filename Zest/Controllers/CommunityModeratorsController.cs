@@ -14,11 +14,11 @@ namespace Zest.Controllers
     public class CommunityModeratorsController : Controller
     {
 		private readonly ICommunityModeratorService communityModeratorService;
-		private readonly IMapper mapper;
-		public CommunityModeratorsController(ICommunityModeratorService communityModeratorService, IMapper mapper)
+	
+		public CommunityModeratorsController(ICommunityModeratorService communityModeratorService)
 		{
 			this.communityModeratorService = communityModeratorService;
-			this.mapper = mapper;
+			
 		}
 		[Authorize]
 		[Route("isModerator/{accountId}/{communityId}")]
@@ -42,7 +42,7 @@ namespace Zest.Controllers
 		[HttpGet]
 		public async Task<UserViewModel[]> GetModeratorsByCommunity(int communityId)
 		{
-			return mapper.Map<UserViewModel[]>(await communityModeratorService.GetModeratorsByCommunityAsync(communityId));
+			return await communityModeratorService.GetModeratorsByCommunityAsync(communityId);
 		}
 
 		[Authorize]
@@ -50,7 +50,7 @@ namespace Zest.Controllers
 		[HttpGet]
 		public async Task<UserViewModel[]> GetModeratorCandidatesByCommunity(int communityId)
 		{
-			return mapper.Map<UserViewModel[]>(await communityModeratorService.GetModeratorCandidatesByCommunityAsync(communityId));
+			return await communityModeratorService.GetModeratorCandidatesByCommunityAsync(communityId);
 		}
 
 		[Authorize]

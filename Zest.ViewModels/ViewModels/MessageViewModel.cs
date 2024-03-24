@@ -8,6 +8,7 @@ namespace Zest.ViewModels.ViewModels
 {
 	public class MessageViewModel
 	{
+        public int Id { get; set; }
         public string SenderUsername { get; set; }
         public string Text { get; set; }
 		public DateTime CreatedOn { get; set; }

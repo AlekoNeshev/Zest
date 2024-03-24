@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace Zest.ViewModels.ViewModels
 {
-    public class AccountViewModel : BaseAccountViewModel
-    {     
-        public string Email { get; set; }     
-    }
+	public class BaseAccountViewModel
+	{
+		public string Id { get; set; }
+		public string Username { get; set; }
+		public DateTime CreatedOn1 { get; set; }
+	}
 }

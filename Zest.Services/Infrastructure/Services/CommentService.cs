@@ -54,12 +54,13 @@ namespace Zest.Services.Infrastructure.Services
 			return comment;
 		}
 
-		public async Task RemoveAsync(int id)
+		public async Task<int> RemoveAsync(int id)
 		{
 			var comment  = await FindCommentAsync(id);
 			comment.IsDeleted = true;
 			_context.Update(comment);
 			await _context.SaveChangesAsync();
+			return comment.PostId;
 		}
 
 		public async Task<CommentViewModel[]> GetCommentsByPostIdAsync(int postId, DateTime lastDate, int takeCount, string accountId)
