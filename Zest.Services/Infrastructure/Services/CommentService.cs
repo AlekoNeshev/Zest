@@ -87,5 +87,40 @@ namespace Zest.Services.Infrastructure.Services
 			}
 			return comments;
 		}
+		public async Task<CommentViewModel[]> GetTrending(int[] skipIds, int takeCount, string accountId, int postId)
+		{
+
+			
+			var comments = await _context.Comments.Where(x=> x.PostId == postId).Include(x => x.Account)
+		.Include(x => x.Likes)
+
+		.Include(x => x.Replies)
+		.ThenInclude(r => r.Replies)
+		.ThenInclude(r => r.Replies)
+		.ThenInclude(r => r.Replies).ToArrayAsync();
+			
+			var likeWeight = 1.0;
+			var commentWeight = 0.5;
+			var decayFactor = 0.9;
+
+			var scores = comments.Select(p => new { Comment = p, Score = CalculateScore(p, likeWeight, commentWeight, decayFactor) });
+
+			var filteredScores = scores.Where(s => !skipIds.Contains(s.Comment.Id)).OrderByDescending(s => s.Score);
+
+			var trendingComments = _mapper.Map<CommentViewModel[]>(filteredScores.Take(takeCount).Select(x => x.Comment).ToArray());
+			foreach (var item in trendingComments)
+			{
+				item.Like = _mapper.Map<LikeViewModel>(await _context.Likes.Where(x => x.AccountId == accountId && x.PostId == item.Id).FirstOrDefaultAsync());
+			}
+			return trendingComments;
+		}
+		private double CalculateScore(Comment comment, double likeWeight, double commentWeight, double decayFactor)
+		{
+			var now = DateTime.UtcNow;
+			var likeScore = comment.Likes.Sum(l => Math.Pow(decayFactor, (now - l.CreatedOn).TotalHours)) * likeWeight;
+			var commentScore = comment.Replies.Sum(c => Math.Pow(decayFactor, (now - c.CreatedOn).TotalHours)) * commentWeight;
+
+			return likeScore + commentScore;
+		}
 	}
 }

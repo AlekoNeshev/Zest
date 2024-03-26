@@ -10,6 +10,7 @@ using Zest.DBModels;
 using Zest.DBModels.Models;
 using Zest.Services.Hubs;
 using Zest.Services.Infrastructure.Interfaces;
+using Zest.Services.Infrastructure.Services;
 using Zest.ViewModels.ViewModels;
 
 namespace Zest.Controllers
@@ -82,6 +83,16 @@ namespace Zest.Controllers
 			var comments = await _commentsService.GetCommentsByPostIdAsync(postId, lastDate, takeCount, accountId);
 			
 			return comments;
+		}
+		[Route("getByTrending/{takeCount}/{postId}")]
+		[HttpPost]
+		public async Task<ActionResult<CommentViewModel[]>> GetByTrending(int takeCount, int postId, [FromBody] int[]? skipIds)
+		{
+			var user = User.Claims;
+			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var posts = await _commentsService.GetTrending(skipIds, takeCount, accountId, postId);
+
+			return posts.ToArray();
 		}
 	}
 

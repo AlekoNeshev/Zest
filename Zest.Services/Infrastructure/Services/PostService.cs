@@ -16,7 +16,6 @@ namespace Zest.Services.Infrastructure.Services
 			_context = context;
 			_mapper = mapper;
 		}
-
 		public async Task<PostViewModel> FindAsync(int id, string accountId)
 		{
 			var post =  _mapper.Map<PostViewModel>(await _context.Posts.Include(x=>x.Likes).Include(x=>x.Account).FirstOrDefaultAsync(x=>x.Id == id));
@@ -61,7 +60,7 @@ namespace Zest.Services.Infrastructure.Services
 			if (communityId != 0)
 			{
 				var posts = await _context.Posts
-			   .Where(x => x.CommunityId == communityId && x.CreatedOn < lastDate)
+			   .Where(x => x.CommunityId == communityId && x.CreatedOn < lastDate && x.IsDeleted == false)
 			   .Include(x => x.Likes)
 				.Include(x => x.Account)
 				.Include(x => x.Community)
@@ -78,7 +77,7 @@ namespace Zest.Services.Infrastructure.Services
 			else
 			{
 				var posts = await _context.Posts
-			   .Where(x => x.CreatedOn < lastDate)
+			   .Where(x => x.CreatedOn < lastDate && x.IsDeleted == false)
 			   .Include(x => x.Likes)
 				.Include(x => x.Account)
 				.Include(x => x.Community)
