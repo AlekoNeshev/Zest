@@ -60,7 +60,7 @@ namespace Zest.Services.Infrastructure.Services
 			if (communityId != 0)
 			{
 				var posts = await _context.Posts
-			   .Where(x => x.CommunityId == communityId && x.CreatedOn < lastDate && x.IsDeleted == false)
+			   .Where(x => x.CommunityId == communityId && x.CreatedOn < lastDate && x.IsDeleted != true)
 			   .Include(x => x.Likes)
 				.Include(x => x.Account)
 				.Include(x => x.Community)
@@ -77,7 +77,7 @@ namespace Zest.Services.Infrastructure.Services
 			else
 			{
 				var posts = await _context.Posts
-			   .Where(x => x.CreatedOn < lastDate && x.IsDeleted == false)
+			   .Where(x => x.CreatedOn < lastDate && x.IsDeleted != true)
 			   .Include(x => x.Likes)
 				.Include(x => x.Account)
 				.Include(x => x.Community)
@@ -153,12 +153,15 @@ namespace Zest.Services.Infrastructure.Services
 
 			return likeScore + commentScore;
 		}
-		public async Task<Post[]> GetByCommunityAsync(int communityId)
+		public async Task<PostViewModel[]> GetByCommunityAsync(int communityId)
 		{
-			return await _context.Posts
+			return _mapper.Map<PostViewModel[]>(await _context.Posts
 				.Where(x => x.CommunityId == communityId)
+				.Include(x => x.Likes)
+				.Include(x => x.Account)
+				.Include(x => x.Community)
 				.OrderByDescending(x => x.CreatedOn)
-				.ToArrayAsync();
+				.ToArrayAsync());
 		}
 
 		public async Task<PostViewModel[]> GetBySearchAsync(string search, string accountId)
@@ -167,7 +170,10 @@ namespace Zest.Services.Infrastructure.Services
 				.OrderByDescending(x => x.Title.Contains(search))
 				.ThenByDescending(x => x.Text.Contains(search))
 				.ThenByDescending(x => x.CreatedOn)
-				.ToListAsync());
+				.Include(x => x.Likes)
+				.Include(x => x.Account)
+				.Include(x => x.Community)
+				.ToArrayAsync());
 			foreach (var item in posts)
 			{
 				item.Like = _mapper.Map<LikeViewModel>(await _context.Likes.Where(x => x.AccountId == accountId&& x.PostId == item.Id).FirstOrDefaultAsync());

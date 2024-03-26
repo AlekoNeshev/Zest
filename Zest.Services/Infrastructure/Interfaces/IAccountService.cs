@@ -14,5 +14,6 @@ namespace Zest.Services.Infrastructure.Interfaces
 		Task<AccountViewModel> FindByIdAsync(string id);
 		Task<AccountViewModel> AddAsync(string accountId, string name, string email);
 		Task<UserViewModel[]> GetAllAsync(string accountId);
+		Task<UserViewModel[]> GetBySearchAsync(string search);
 	}
 }

@@ -13,11 +13,11 @@ namespace Zest.Controllers
     [ApiController]
     public class CommunityModeratorsController : Controller
     {
-		private readonly ICommunityModeratorService communityModeratorService;
+		private readonly ICommunityModeratorService _communityModeratorService;
 	
 		public CommunityModeratorsController(ICommunityModeratorService communityModeratorService)
 		{
-			this.communityModeratorService = communityModeratorService;
+			this._communityModeratorService = communityModeratorService;
 			
 		}
 		[Authorize]
@@ -25,7 +25,7 @@ namespace Zest.Controllers
 		[HttpGet]
 		public async Task<ActionResult<bool>> Find(string accountId, int communityId)
 		{
-			return await communityModeratorService.IsModeratorAsync(accountId, communityId);
+			return await _communityModeratorService.IsModeratorAsync(accountId, communityId);
 		}
 
 		[Authorize]
@@ -33,7 +33,7 @@ namespace Zest.Controllers
 		[HttpPost]
 		public async Task<IActionResult> Add(string accountId, int communityId)
 		{
-			await communityModeratorService.AddModeratorAsync(accountId, communityId);
+			await _communityModeratorService.AddModeratorAsync(accountId, communityId);
 			return Ok();
 		}
 
@@ -42,7 +42,7 @@ namespace Zest.Controllers
 		[HttpGet]
 		public async Task<UserViewModel[]> GetModeratorsByCommunity(int communityId)
 		{
-			return await communityModeratorService.GetModeratorsByCommunityAsync(communityId);
+			return await _communityModeratorService.GetModeratorsByCommunityAsync(communityId);
 		}
 
 		[Authorize]
@@ -50,7 +50,7 @@ namespace Zest.Controllers
 		[HttpGet]
 		public async Task<UserViewModel[]> GetModeratorCandidatesByCommunity(int communityId)
 		{
-			return await communityModeratorService.GetModeratorCandidatesByCommunityAsync(communityId);
+			return await _communityModeratorService.GetModeratorCandidatesByCommunityAsync(communityId);
 		}
 
 		[Authorize]
@@ -58,7 +58,7 @@ namespace Zest.Controllers
 		[HttpPost]
 		public async Task<IActionResult> ApproveCandidate(string accountId, int communityId)
 		{
-			await communityModeratorService.ApproveCandidateAsync(accountId, communityId);
+			await _communityModeratorService.ApproveCandidateAsync(accountId, communityId);
 			return Ok();
 		}
 
@@ -67,7 +67,7 @@ namespace Zest.Controllers
 		[HttpPost]
 		public async Task<IActionResult> RemoveModerator(string accountId, int communityId)
 		{
-			await communityModeratorService.RemoveModeratorAsync(accountId, communityId);
+			await _communityModeratorService.RemoveModeratorAsync(accountId, communityId);
 			return Ok();
 		}
 

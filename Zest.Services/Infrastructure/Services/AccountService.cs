@@ -56,6 +56,15 @@ namespace Zest.Services.Infrastructure.Services
 		{
 			return await _zestContext.Followers.Include(x => x.Followed).Include(x => x.FollowerNavigation).FirstOrDefaultAsync(x => x.FollowerId == followerId && x.FollowedId == followedId);
 		}
+		public async Task<UserViewModel[]> GetBySearchAsync(string search)
+		{
+			var accounts = _mapper.Map<UserViewModel[]>(await _zestContext.Accounts
+				.OrderByDescending(x => x.Username.Contains(search))
+				.ThenByDescending(x => x.CreatedOn)
+				.ToArrayAsync());
+
+			return accounts;
+		}
 	}
 
 }

@@ -97,6 +97,15 @@ namespace Zest.Services.Infrastructure.Services
 
 			return userWeight * userCount + postWeight * postCount + likeWeight * likeCount + commentWeight * commentCount;
 		}
-
+		public async Task<CommunityViewModel[]> GetBySearchAsync(string search)
+		{
+			var communities = _mapper.Map<CommunityViewModel[]>(await _context.Communities
+				.OrderByDescending(x => x.Name.Contains(search))
+				.ThenByDescending(x => x.Information.Contains(search))
+				.ThenByDescending(x => x.CreatedOn)
+				.ToArrayAsync());
+			
+			return communities;
+		}
 	}
 }

@@ -7,6 +7,7 @@ using System.Security.Claims;
 using Zest.DBModels;
 using Zest.DBModels.Models;
 using Zest.Services.Infrastructure.Interfaces;
+using Zest.Services.Infrastructure.Services;
 using Zest.ViewModels.ViewModels;
 
 namespace Zest.Controllers
@@ -69,6 +70,16 @@ namespace Zest.Controllers
 		public async Task<ActionResult<CommunityViewModel[]>> GetCommunitiesByPopularity(int takeCount,[FromBody] int[]? skipIds)
 		{
 			var communities = await _communityService.GetTrendingCommunities(skipIds, takeCount);
+			return communities;
+		}
+		[Route("getBySearch/{search}")]
+		[HttpGet]
+		public async Task<ActionResult<CommunityViewModel[]>> GetBySearch(string search)
+		{
+			var user = User.Claims;
+			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var communities = await _communityService.GetBySearchAsync(search);
+
 			return communities;
 		}
 	}

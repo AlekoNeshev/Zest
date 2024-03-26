@@ -15,13 +15,12 @@ namespace Zest.Controllers
     public class PostController : ControllerBase
     {
 		private readonly IPostService _postService;
-		private readonly IMapper _mapper;
 		private readonly IHubContext<CommentsHub> _hubContext;
 
-		public PostController(IPostService postService, IMapper mapper, IHubContext<CommentsHub> hubContext)
+		public PostController(IPostService postService, IHubContext<CommentsHub> hubContext)
 		{
 			_postService = postService;
-			_mapper = mapper;
+			
 			_hubContext = hubContext;
 		}
 
@@ -32,7 +31,7 @@ namespace Zest.Controllers
 			var user = User.Claims;
 			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 			var post = await _postService.FindAsync(id, accountId);
-			return _mapper.Map<PostViewModel>(post);
+			return post;
 		}
 
 		[Route("add/{title}/community/{communityId}")]
@@ -81,7 +80,7 @@ namespace Zest.Controllers
 		{
 			var user = User.Claims;
 			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-			var posts = _mapper.Map<PostViewModel[]>(await _postService.GetByCommunityAsync(communityId));
+			var posts = await _postService.GetByCommunityAsync(communityId);
 			
 			return posts;
 		}
@@ -92,7 +91,7 @@ namespace Zest.Controllers
 		{
 			var user = User.Claims;
 			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-			var posts = _mapper.Map<PostViewModel[]>(await _postService.GetBySearchAsync(search, accountId));
+			var posts = await _postService.GetBySearchAsync(search, accountId);
 			
 			return posts;
 		}
