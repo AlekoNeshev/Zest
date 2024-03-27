@@ -24,9 +24,9 @@ namespace Zest.Services.Infrastructure.Services
 
 		}
 
-		public async Task<CommunityViewModel[]> GetAllCommunitiesAsync(string accountId)
+		public async Task<CommunityViewModel[]> GetAllCommunitiesAsync(string accountId, int skipCount, int takeCount)
 		{
-			var communities = await _context.Communities.Include(x => x.Creator).ToArrayAsync();
+			var communities = await _context.Communities.Include(x => x.Creator).Skip(skipCount).Take(takeCount).ToArrayAsync();
 			
 			return _mapper.Map<CommunityViewModel[]>(communities);
 		}

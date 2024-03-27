@@ -47,5 +47,12 @@ namespace Zest.Services.Infrastructure.Services
 
 			return _mapper.Map<FollowerViewModel[]>(friends);
 		}
+		public async Task<FollowerViewModel[]> GetBySearchAsync(string search, string accountId)
+		{
+			var accounts = await FindFriendsAsync(accountId);
+				accounts = accounts.OrderByDescending(x => x.FollowerUsername.Contains(search)).ToArray();
+
+			return accounts;
+		}
 	}
 }

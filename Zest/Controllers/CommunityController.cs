@@ -36,12 +36,12 @@ namespace Zest.Controllers
 			return community;
 		}
 
-		[Route("getAll")]
+		[Route("getAll/{takeCount}/{skipCount}")]
 		[HttpGet]
-		public async Task<ActionResult<CommunityViewModel[]>> GetAll()
+		public async Task<ActionResult<CommunityViewModel[]>> GetAll(int takeCount, int skipCount = 0)
 		{
 			var accountId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-			var communities = await _communityService.GetAllCommunitiesAsync(accountId);
+			var communities = await _communityService.GetAllCommunitiesAsync(accountId, skipCount, takeCount);
 			foreach (var item in communities)
 			{
 				item.IsSubscribed = await  _communityFollowerService.DoesExistAsync(accountId, item.Id);

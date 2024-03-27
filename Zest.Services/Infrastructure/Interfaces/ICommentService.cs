@@ -13,7 +13,7 @@ namespace Zest.Services.Infrastructure.Interfaces
 	{
 		Task<CommentViewModel> FindAsync(int id, string accountId);
 		Task<EntityEntry<Comment>> AddAsync(string accountId, int postId, string text, int commentId);
-		Task<int> RemoveAsync(int id);
+		Task RemoveAsync(int id);
 		Task<CommentViewModel[]> GetCommentsByPostIdAsync(int postId, DateTime lastDate, int takeCount, string accountId);
 		Task<CommentViewModel[]> GetTrending(int[] skipIds, int takeCount, string accountId, int postId);
 

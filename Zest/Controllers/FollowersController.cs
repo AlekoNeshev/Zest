@@ -7,6 +7,7 @@ using System.Security.Claims;
 using Zest.DBModels;
 using Zest.DBModels.Models;
 using Zest.Services.Infrastructure.Interfaces;
+using Zest.Services.Infrastructure.Services;
 using Zest.ViewModels.ViewModels;
 
 namespace Zest.Controllers
@@ -58,6 +59,16 @@ namespace Zest.Controllers
 			var user = User.Claims;
 			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 			var followers = await _followerService.FindFriendsAsync(accountId);
+			return followers;
+		}
+		[Route("getBySearch/{search}")]
+		[HttpGet]
+		public async Task<ActionResult<FollowerViewModel[]>> GetBySearch(string search)
+		{
+			var user = User.Claims;
+			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var followers = await _followerService.GetBySearchAsync(search, accountId);
+
 			return followers;
 		}
 	}

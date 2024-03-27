@@ -46,8 +46,6 @@ namespace Zest.Services.Infrastructure.Services
 			var accounts = _mapper.Map<UserViewModel[]>(await _zestContext.Accounts.Where(x=>x.Id != accountId).ToArrayAsync());
 			foreach (var item in accounts)
 			{
-
-
 				item.IsFollowed = await FindFollowerAsync(accountId, item.Id) != null;
 			}
 			return accounts;
@@ -56,9 +54,9 @@ namespace Zest.Services.Infrastructure.Services
 		{
 			return await _zestContext.Followers.Include(x => x.Followed).Include(x => x.FollowerNavigation).FirstOrDefaultAsync(x => x.FollowerId == followerId && x.FollowedId == followedId);
 		}
-		public async Task<UserViewModel[]> GetBySearchAsync(string search)
+		public async Task<UserViewModel[]> GetBySearchAsync(string search, string accountId)
 		{
-			var accounts = _mapper.Map<UserViewModel[]>(await _zestContext.Accounts
+			var accounts = _mapper.Map<UserViewModel[]>(await _zestContext.Accounts.Where(x=>x.Id != accountId)
 				.OrderByDescending(x => x.Username.Contains(search))
 				.ThenByDescending(x => x.CreatedOn)
 				.ToArrayAsync());

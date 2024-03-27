@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Zest.Services.Infrastructure.Interfaces;
+using Zest.Services.Infrastructure.Services;
 using Zest.ViewModels.ViewModels;
 namespace Zest.Controllers
 {
@@ -15,8 +16,7 @@ namespace Zest.Controllers
         
         public AccountController(IAccountService accountService)
         {
-            this._accountService = accountService;
-         
+            this._accountService = accountService;      
         }
  
         [Route("get")]
@@ -25,6 +25,7 @@ namespace Zest.Controllers
         {
             var accountId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             var account = await _accountService.FindByIdAsync(accountId);
+
             return Ok(account);
         }
        
@@ -33,10 +34,8 @@ namespace Zest.Controllers
         public async Task<ActionResult<AccountViewModel>> Add(string name, string email)
         {
             var accountId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
             var account = _accountService.AddAsync(accountId, name, email);
-           
-       
+   
             return Ok(account);
         }
 		[Route("getAll")]
@@ -46,9 +45,18 @@ namespace Zest.Controllers
 			
 			var accountId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 			var accounts = await _accountService.GetAllAsync(accountId);
-           
-			
+           			
 			return Ok(accounts);
+		}
+		[Route("getBySearch/{search}")]
+		[HttpGet]
+		public async Task<ActionResult<UserViewModel[]>> GetBySearch(string search)
+		{
+			var user = User.Claims;
+			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var accounts = await _accountService.GetBySearchAsync(search, accountId);
+
+			return accounts;
 		}
 	}
 }

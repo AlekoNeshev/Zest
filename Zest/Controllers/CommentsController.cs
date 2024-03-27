@@ -65,11 +65,11 @@ namespace Zest.Controllers
 			return BadRequest();
 		}
 
-		[Route("remove/{commentId}")]
+		[Route("remove/{commentId}/{postId}")]
 		[HttpPut]
-		public async Task<ActionResult> Remove(int commentId)
+		public async Task<ActionResult> Remove(int commentId, int postId)
 		{		
-			var postId = await _commentsService.RemoveAsync(commentId);
+			await _commentsService.RemoveAsync(commentId);
 			await _commentsHubContext.Clients.Group(("comment-" + postId.ToString())).SendAsync("CommentDeleted", commentId);
 			return Ok(commentId);
 		}
