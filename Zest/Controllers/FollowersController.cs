@@ -61,13 +61,13 @@ namespace Zest.Controllers
 			var followers = await _followerService.FindFriendsAsync(accountId);
 			return followers;
 		}
-		[Route("getBySearch/{search}")]
-		[HttpGet]
-		public async Task<ActionResult<FollowerViewModel[]>> GetBySearch(string search)
+		[Route("getBySearch/{search}/{takeCount}")]
+		[HttpPost]
+		public async Task<ActionResult<FollowerViewModel[]>> GetBySearch(string search, int takeCount, [FromBody] string[]? skipIds)
 		{
 			var user = User.Claims;
 			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-			var followers = await _followerService.GetBySearchAsync(search, accountId);
+			var followers = await _followerService.GetBySearchAsync(search, accountId, takeCount, skipIds);
 
 			return followers;
 		}

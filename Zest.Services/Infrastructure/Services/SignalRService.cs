@@ -9,13 +9,13 @@ namespace Zest.Services.Infrastructure.Services
 	{
 		private readonly IHubContext<LikesHub> _likesHubContext;
 		private readonly IHubContext<MessageHub> _messageHubContext;
-		private readonly IHubContext<CommentsHub> _commentsHubContext;
+		private readonly IHubContext<DeleteHub> _deleteHubContext;
 		private readonly SignaRGroupsPlaceholder _signaRGroupsPlaceholder;
-		public SignalRService(IHubContext<LikesHub> likesHubContext, IHubContext<MessageHub> messageHubContext, IHubContext<CommentsHub> commentsHubContext, SignaRGroupsPlaceholder signaRGroupsPlaceholder) 
+		public SignalRService(IHubContext<LikesHub> likesHubContext, IHubContext<MessageHub> messageHubContext, IHubContext<DeleteHub> commentsHubContext, SignaRGroupsPlaceholder signaRGroupsPlaceholder) 
 		{
 			this._likesHubContext = likesHubContext;
 			this._messageHubContext = messageHubContext;
-			this._commentsHubContext = commentsHubContext;
+			this._deleteHubContext = commentsHubContext;
 			this._signaRGroupsPlaceholder = signaRGroupsPlaceholder;
 		}
 		public async Task AddConnectionToGroup(string connectionId,  string[]? groupsId)
@@ -27,12 +27,12 @@ namespace Zest.Services.Infrastructure.Services
 
 					await _messageHubContext.Groups.AddToGroupAsync(connectionId, item);
 				}
-				else if (item.Contains("comment"))
+				else if (item.Contains("pdd"))
 				{
-					await _commentsHubContext.Groups.AddToGroupAsync(connectionId, item);
+					await _deleteHubContext.Groups.AddToGroupAsync(connectionId, item);
 
 				}
-				else if (item.Contains("pd"))
+				else if (item.Contains("pdl"))
 				{
 					await _likesHubContext.Groups.AddToGroupAsync(connectionId, item);
 				}
@@ -50,7 +50,7 @@ namespace Zest.Services.Infrastructure.Services
 			{
 				await _likesHubContext.Groups.RemoveFromGroupAsync(connectionId, group);
 				await _messageHubContext.Groups.RemoveFromGroupAsync(connectionId, group);
-				await _commentsHubContext.Groups.RemoveFromGroupAsync(connectionId, group);
+				await _deleteHubContext.Groups.RemoveFromGroupAsync(connectionId, group);
 			}
 		
 		}

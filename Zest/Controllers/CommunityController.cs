@@ -58,11 +58,11 @@ namespace Zest.Controllers
 			var communityId = await _communityService.AddCommunityAsync(creatorId, name, discription);
 			return Ok(communityId);
 		}
-		[Route("GetByAccountId/{accountId}")]
+		[Route("GetByAccountId/{accountId}/{takeCount}/{skipCount}")]
 		[HttpGet]
-		public async Task<ActionResult<CommunityViewModel[]>> GetCommunitiesByAccount(string accountId)
+		public async Task<ActionResult<CommunityViewModel[]>> GetCommunitiesByAccount(string accountId, int takeCount, int skipCount = 0)
 		{
-			var communities = await _communityService.GetCommunitiesByAccount(accountId);
+			var communities = await _communityService.GetCommunitiesByAccount(accountId, takeCount, skipCount);
 			return communities;
 		}
 		[Route("GetByPopularityId/{takeCount}")]
@@ -72,13 +72,13 @@ namespace Zest.Controllers
 			var communities = await _communityService.GetTrendingCommunities(skipIds, takeCount);
 			return communities;
 		}
-		[Route("getBySearch/{search}")]
-		[HttpGet]
-		public async Task<ActionResult<CommunityViewModel[]>> GetBySearch(string search)
+		[Route("getBySearch/{search}/{takeCount}")]
+		[HttpPost]
+		public async Task<ActionResult<CommunityViewModel[]>> GetBySearch(string search, int takeCount, [FromBody] int[]? skipIds)
 		{
 			var user = User.Claims;
 			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-			var communities = await _communityService.GetBySearchAsync(search);
+			var communities = await _communityService.GetBySearchAsync(search, takeCount, skipIds);
 
 			return communities;
 		}

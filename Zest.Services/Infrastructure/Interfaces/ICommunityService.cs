@@ -13,9 +13,9 @@ namespace Zest.Services.Infrastructure.Interfaces
 		Task<CommunityViewModel> GetCommunityByIdAsync(int id);
 		Task<CommunityViewModel[]> GetAllCommunitiesAsync(string accountId, int skipCount, int takeCount);
 		Task<int> AddCommunityAsync(string creatorId, string name, string discription);
-		Task<CommunityViewModel[]> GetCommunitiesByAccount(string accountId);
+		Task<CommunityViewModel[]> GetCommunitiesByAccount(string accountId, int takeCount, int skipCount);
 		Task<CommunityViewModel[]> GetTrendingCommunities(int[] skipIds, int takeCount);
-		Task<CommunityViewModel[]> GetBySearchAsync(string search);
+		Task<CommunityViewModel[]> GetBySearchAsync(string search, int takeCount, int[]? skipIds);
 	}
 
 }

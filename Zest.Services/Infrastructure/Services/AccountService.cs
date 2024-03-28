@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System.Linq;
 using Zest.DBModels;
 using Zest.DBModels.Models;
 using Zest.Services.Infrastructure.Interfaces;
@@ -54,11 +55,11 @@ namespace Zest.Services.Infrastructure.Services
 		{
 			return await _zestContext.Followers.Include(x => x.Followed).Include(x => x.FollowerNavigation).FirstOrDefaultAsync(x => x.FollowerId == followerId && x.FollowedId == followedId);
 		}
-		public async Task<UserViewModel[]> GetBySearchAsync(string search, string accountId)
+		public async Task<UserViewModel[]> GetBySearchAsync(string search, string accountId, int takeCount, string[]? skipIds)
 		{
-			var accounts = _mapper.Map<UserViewModel[]>(await _zestContext.Accounts.Where(x=>x.Id != accountId)
+			var accounts = _mapper.Map<UserViewModel[]>(await _zestContext.Accounts.Where(x=>x.Id != accountId && !skipIds.Contains(x.Id))
 				.OrderByDescending(x => x.Username.Contains(search))
-				.ThenByDescending(x => x.CreatedOn)
+				.ThenByDescending(x => x.CreatedOn).Take(takeCount)
 				.ToArrayAsync());
 
 			return accounts;

@@ -18,7 +18,7 @@ namespace Zest.Services.Infrastructure.Services
 		}
 		public async Task<PostViewModel> FindAsync(int id, string accountId)
 		{
-			var post =  _mapper.Map<PostViewModel>(await _context.Posts.Include(x=>x.Likes).Include(x=>x.Account).FirstOrDefaultAsync(x=>x.Id == id));
+			var post =  _mapper.Map<PostViewModel>(await _context.Posts.Include(x=>x.Likes).Include(x=>x.Account).Include(x=>x.PostResources).FirstOrDefaultAsync(x=>x.Id == id));
 			post.Like = _mapper.Map<LikeViewModel>(await _context.Likes.Where(x => x.AccountId == accountId && x.PostId == post.Id).FirstOrDefaultAsync()); ;
 			return post; ;
 		}
@@ -64,6 +64,7 @@ namespace Zest.Services.Infrastructure.Services
 			   .Include(x => x.Likes)
 				.Include(x => x.Account)
 				.Include(x => x.Community)
+				.Include(x => x.PostResources)
 			   .OrderByDescending(p => p.CreatedOn)
 			   .Take(takeCount)
 			   .ToArrayAsync();
@@ -81,6 +82,7 @@ namespace Zest.Services.Infrastructure.Services
 			   .Include(x => x.Likes)
 				.Include(x => x.Account)
 				.Include(x => x.Community)
+				.Include(x => x.PostResources)
 			   .OrderByDescending(p => p.CreatedOn)
 			   .Take(takeCount)
 			   .ToArrayAsync();
@@ -97,7 +99,7 @@ namespace Zest.Services.Infrastructure.Services
 			
 			var cutoffDate = DateTime.UtcNow - TimeSpan.FromHours(72);
 			var posts = await _context.Posts.Where(x => x.CreatedOn >= cutoffDate).Include(x => x.Likes)
-				.Include(x => x.Account).Include(x=>x.Community).ToArrayAsync();
+				.Include(x => x.Account).Include(x=>x.Community).Include(x => x.PostResources).ToArrayAsync();
 			if (communityId > 0)
 			{
 				posts = posts.Where(x => x.CommunityId == communityId).ToArray();
@@ -136,6 +138,7 @@ namespace Zest.Services.Infrastructure.Services
 				.Include(x=>x.Likes)
 				.Include(x=>x.Account)
 				.Include(x => x.Community)
+				.Include(x => x.PostResources)
 				.OrderByDescending(p => p.CreatedOn)
 				.Take(takeCount)
 				.ToArrayAsync());
@@ -160,19 +163,22 @@ namespace Zest.Services.Infrastructure.Services
 				.Include(x => x.Likes)
 				.Include(x => x.Account)
 				.Include(x => x.Community)
+				.Include(x => x.PostResources)
 				.OrderByDescending(x => x.CreatedOn)
 				.ToArrayAsync());
 		}
 
-		public async Task<PostViewModel[]> GetBySearchAsync(string search, string accountId)
+		public async Task<PostViewModel[]> GetBySearchAsync(string search, string accountId, int takeCount, int[]? skipIds)
 		{
-			var posts = _mapper.Map<PostViewModel[]>( await _context.Posts
+			var posts = _mapper.Map<PostViewModel[]>(await _context.Posts.Where(p => !skipIds.Contains(p.Id))
 				.OrderByDescending(x => x.Title.Contains(search))
 				.ThenByDescending(x => x.Text.Contains(search))
 				.ThenByDescending(x => x.CreatedOn)
 				.Include(x => x.Likes)
 				.Include(x => x.Account)
 				.Include(x => x.Community)
+				.Include(x => x.PostResources)
+				.Take(takeCount)
 				.ToArrayAsync());
 			foreach (var item in posts)
 			{

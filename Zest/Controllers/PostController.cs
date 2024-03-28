@@ -15,9 +15,9 @@ namespace Zest.Controllers
     public class PostController : ControllerBase
     {
 		private readonly IPostService _postService;
-		private readonly IHubContext<CommentsHub> _hubContext;
+		private readonly IHubContext<DeleteHub> _hubContext;
 
-		public PostController(IPostService postService, IHubContext<CommentsHub> hubContext)
+		public PostController(IPostService postService, IHubContext<DeleteHub> hubContext)
 		{
 			_postService = postService;
 			
@@ -85,13 +85,13 @@ namespace Zest.Controllers
 			return posts;
 		}
 
-		[Route("getBySearch/{search}")]
-		[HttpGet]
-		public async Task<ActionResult<PostViewModel[]>> GetBySearch(string search)
+		[Route("getBySearch/{search}/{takeCount}")]
+		[HttpPost]
+		public async Task<ActionResult<PostViewModel[]>> GetBySearch(string search, int takeCount, [FromBody] int[]? skipIds)
 		{
 			var user = User.Claims;
 			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-			var posts = await _postService.GetBySearchAsync(search, accountId);
+			var posts = await _postService.GetBySearchAsync(search, accountId, takeCount, skipIds);
 			
 			return posts;
 		}

@@ -48,13 +48,13 @@ namespace Zest.Controllers
            			
 			return Ok(accounts);
 		}
-		[Route("getBySearch/{search}")]
-		[HttpGet]
-		public async Task<ActionResult<UserViewModel[]>> GetBySearch(string search)
+		[Route("getBySearch/{search}/{takeCount}")]
+		[HttpPost]
+		public async Task<ActionResult<UserViewModel[]>> GetBySearch(string search, int takeCount, [FromBody] string[]? skipIds)
 		{
 			var user = User.Claims;
 			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-			var accounts = await _accountService.GetBySearchAsync(search, accountId);
+			var accounts = await _accountService.GetBySearchAsync(search, accountId, takeCount, skipIds);
 
 			return accounts;
 		}

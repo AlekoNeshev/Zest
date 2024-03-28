@@ -5,10 +5,10 @@ using Microsoft.AspNetCore.Http;
 
 namespace Zest.Services.Hubs
 {
-	public class CommentsHub : Hub
+	public class DeleteHub : Hub
 	{
 		private readonly UserConnectionService _notificationService;
-		public CommentsHub(UserConnectionService userConnectionService)
+		public DeleteHub(UserConnectionService userConnectionService)
 		{
 			_notificationService = userConnectionService;
 		}

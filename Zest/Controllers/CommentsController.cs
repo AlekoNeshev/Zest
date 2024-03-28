@@ -21,13 +21,13 @@ namespace Zest.Controllers
     public class CommentsController : ControllerBase
     {
 		private readonly ICommentsService _commentsService;
-		private readonly IHubContext<CommentsHub> _commentsHubContext;
+		private readonly IHubContext<DeleteHub> _deleteHubContext;
 
 
-		public CommentsController(ICommentsService commentsService, IHubContext<CommentsHub> hubContext)
+		public CommentsController(ICommentsService commentsService, IHubContext<DeleteHub> hubContext)
 		{
 			_commentsService = commentsService;
-			_commentsHubContext = hubContext;
+			_deleteHubContext = hubContext;
 			
 		}
 
@@ -70,7 +70,7 @@ namespace Zest.Controllers
 		public async Task<ActionResult> Remove(int commentId, int postId)
 		{		
 			await _commentsService.RemoveAsync(commentId);
-			await _commentsHubContext.Clients.Group(("comment-" + postId.ToString())).SendAsync("CommentDeleted", commentId);
+			await _deleteHubContext.Clients.Group(("comment-" + postId.ToString())).SendAsync("CommentDeleted", commentId);
 			return Ok(commentId);
 		}
 

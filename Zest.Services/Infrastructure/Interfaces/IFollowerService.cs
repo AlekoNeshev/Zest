@@ -14,6 +14,6 @@ namespace Zest.Services.Infrastructure.Interfaces
 		Task AddAsync(string followerId, string followedId);
 		Task DeleteAsync(string followerId, string followedId);
 		Task<FollowerViewModel[]> FindFriendsAsync(string accountId);
-		Task<FollowerViewModel[]> GetBySearchAsync(string search, string accountId);
+		Task<FollowerViewModel[]> GetBySearchAsync(string search, string accountId, int takeCount, string[]? skipIds);
 	}
 }

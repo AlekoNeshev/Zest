@@ -54,10 +54,10 @@ namespace Zest.Services.Infrastructure.Services
 			await _context.SaveChangesAsync();
 			return community.Id;
 		}
-		public async Task<CommunityViewModel[]> GetCommunitiesByAccount(string accountId)
+		public async Task<CommunityViewModel[]> GetCommunitiesByAccount(string accountId, int takeCount, int skipCount)
 		{
 			
-			return _mapper.Map<CommunityViewModel[]>(_context.CommunityFollowers.Where(x => x.AccountId==accountId).Include(x=>x.Community).Select(x => x.Community).ToArray());
+			return _mapper.Map<CommunityViewModel[]>(_context.CommunityFollowers.Where(x => x.AccountId==accountId).Skip(skipCount).Take(takeCount).Include(x=>x.Community).Select(x => x.Community).ToArray());
 		}
 		public async Task<CommunityViewModel[]> GetTrendingCommunities(int[] skipIds, int takeCount)
 		{
@@ -97,12 +97,13 @@ namespace Zest.Services.Infrastructure.Services
 
 			return userWeight * userCount + postWeight * postCount + likeWeight * likeCount + commentWeight * commentCount;
 		}
-		public async Task<CommunityViewModel[]> GetBySearchAsync(string search)
+		public async Task<CommunityViewModel[]> GetBySearchAsync(string search, int takeCount, int[] skipIds)
 		{
-			var communities = _mapper.Map<CommunityViewModel[]>(await _context.Communities
+			var communities = _mapper.Map<CommunityViewModel[]>(await _context.Communities.Where(p => !skipIds.Contains(p.Id))
 				.OrderByDescending(x => x.Name.Contains(search))
 				.ThenByDescending(x => x.Information.Contains(search))
 				.ThenByDescending(x => x.CreatedOn)
+				.Take(takeCount)
 				.ToArrayAsync());
 			
 			return communities;

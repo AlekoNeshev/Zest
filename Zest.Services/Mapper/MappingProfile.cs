@@ -57,6 +57,7 @@ namespace Zest.Services.Mapper
 				.ForMember(dest => dest.Source, op => op.MapFrom(src => src.Path + " "));
 			CreateMap<Account, UserViewModel>()
 				.ForMember(dest => dest.CreatedOn1, op => op.MapFrom(src => src.CreatedOn));
+			CreateMap<Like, LikeViewModel>();
 		}
 
 	}

@@ -1,11 +1,10 @@
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
 using Zest.DBModels;
 using Zest.Services.Hubs;
 using Zest.Services.Infrastructure.Interfaces;
 using Zest.Services.Infrastructure.Services;
+using Zest.Services.Mapper;
 
 namespace Zest
 {
@@ -85,7 +84,7 @@ namespace Zest
 			
 			
 			app.MapHub<LikesHub>("/likeshub");
-			app.MapHub<CommentsHub>("/commentshub");
+			app.MapHub<DeleteHub>("/deletehub");
 			app.MapHub<MessageHub>("/messagehub");
 
 			app.MapControllers();

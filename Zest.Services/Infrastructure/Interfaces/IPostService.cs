@@ -15,7 +15,7 @@ namespace Zest.Services.Infrastructure.Interfaces
 		Task RemoveAsync(int id);
 		Task<PostViewModel[]> GetByDateAsync(string accountId, DateTime lastDate, int communityId, int takeCount);
 		Task<PostViewModel[]> GetByCommunityAsync(int communityId);
-		Task<PostViewModel[]> GetBySearchAsync(string search, string accountId);
+		Task<PostViewModel[]> GetBySearchAsync(string search, string accountId, int takeCount, int[]? skipIds);
 		Task<bool> IsOwnerAsync(int postId, string accountId);
 		Task<PostViewModel[]> GetFollowedPostsAsync(int[] skipIds, int takeCount, string accountId);
 		Task<PostViewModel[]> GetTrending(int[] skipIds, int takeCount, string accountId,int communityId = 0);
