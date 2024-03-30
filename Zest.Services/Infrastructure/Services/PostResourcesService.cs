@@ -94,11 +94,15 @@ namespace Zest.Services.Infrastructure.Services
 			return "Shiish";
 		}
 
-		public async Task<CustomFileStreamResult> GetFileAsync(string fileName)
+		public async Task<CustomFileStreamResult?> GetFileAsync(string fileName)
 		{
 			var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
 			var uploads = Path.Combine(baseDirectory, "uploads");
 			var filePath = Path.Combine(uploads, fileName);
+			if (!System.IO.File.Exists(filePath))
+			{
+				return null;
+			}
 			var mimeType = MimeTypesMap.GetMimeType(fileName);
 			var fileStream = System.IO.File.OpenRead(filePath);
 
@@ -109,7 +113,8 @@ namespace Zest.Services.Infrastructure.Services
 		public async Task<PostRescourcesViewModel[]> GetPostResourcesByPostIdAsync(int postId)
 		{
 			List<PostRescourcesViewModel> fileResults = new List<PostRescourcesViewModel>();
-			var uploads = (_context.PostResources.Where(x => x.PostId == postId).ToArray());
+			var uploads = _context.PostResources.Where(x => x.PostId == postId).ToArray();
+			
 			foreach (var x in uploads)
 			{
 				PostRescourcesViewModel postRescourcesViewModel = new PostRescourcesViewModel();

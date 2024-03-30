@@ -33,18 +33,23 @@ namespace Zest.Controllers
         [HttpPost]
         public async Task<ActionResult<AccountViewModel>> Add(string name, string email)
         {
-            var accountId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var accountId = User.Id();
+			var doesUsernameExist = _accountService.FindByUsernameAsync(name);
+            if(doesUsernameExist == null)
+            {
+                return BadRequest("Username already exists!");
+            }
             var account = _accountService.AddAsync(accountId, name, email);
    
             return Ok(account);
         }
-		[Route("getAll")]
+		[Route("getAll/{takeCount}/{skipCount}")]
 		[HttpGet]
-		public async Task<ActionResult<UserViewModel[]>> GetAll()
+		public async Task<ActionResult<UserViewModel[]>> GetAll(int takeCount, int skipCount = 0)
 		{
-			
-			var accountId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-			var accounts = await _accountService.GetAllAsync(accountId);
+
+            var accountId = User.Id();
+			var accounts = await _accountService.GetAllAsync(accountId, takeCount, skipCount);
            			
 			return Ok(accounts);
 		}
@@ -52,8 +57,12 @@ namespace Zest.Controllers
 		[HttpPost]
 		public async Task<ActionResult<UserViewModel[]>> GetBySearch(string search, int takeCount, [FromBody] string[]? skipIds)
 		{
-			var user = User.Claims;
-			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrWhiteSpace(search))
+            {
+                return BadRequest("Search is empty!");
+
+            }
+			var accountId = User.Id();
 			var accounts = await _accountService.GetBySearchAsync(search, accountId, takeCount, skipIds);
 
 			return accounts;

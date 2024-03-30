@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using Zest.Services.Hubs;
 using Zest.Services.Infrastructure.Interfaces;
@@ -16,11 +17,11 @@ namespace Zest.Controllers
     {
 		private readonly IPostService _postService;
 		private readonly IHubContext<DeleteHub> _hubContext;
-
-		public PostController(IPostService postService, IHubContext<DeleteHub> hubContext)
+		private readonly ICommunityService _communityService;
+		public PostController(IPostService postService, IHubContext<DeleteHub> hubContext, ICommunityService communityService)
 		{
 			_postService = postService;
-			
+			_communityService = communityService;
 			_hubContext = hubContext;
 		}
 
@@ -31,6 +32,10 @@ namespace Zest.Controllers
 			var user = User.Claims;
 			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 			var post = await _postService.FindAsync(id, accountId);
+			if (post == null)
+			{
+				return BadRequest("Post does not exist");
+			}
 			return post;
 		}
 
@@ -40,6 +45,12 @@ namespace Zest.Controllers
 		{
 			var user = User.Claims;
 			var publisherId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var doesCommunityExists = await _communityService.DoesExistAsync(communityId);
+			if (!doesCommunityExists)
+			{
+				return BadRequest("Community does not exists");
+			}
+
 			var post = await _postService.AddAsync(title, text, publisherId, communityId);
 			return Ok(post.Id);
 		}
@@ -54,11 +65,11 @@ namespace Zest.Controllers
 
 			if (post == null)
 			{
-				return BadRequest();
+				return BadRequest("Post does not exist!");
 			}
 
 			await _postService.RemoveAsync(postId);
-			await _hubContext.Clients.Group("comment-" +  postId.ToString()).SendAsync("PostDeleted", postId);
+			await _hubContext.Clients.Group("pdd-" +  postId.ToString()).SendAsync("PostDeleted", postId);
 			return Ok();
 		}
 
@@ -68,7 +79,14 @@ namespace Zest.Controllers
 		{
 			var user = User.Claims;
 			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
+			if (communityId !=0)
+			{
+				var doesCommunityExists = await _communityService.DoesExistAsync(communityId);
+				if (!doesCommunityExists)
+				{
+					return BadRequest("Community does not exists");
+				}
+			}
 			var posts = await _postService.GetByDateAsync(accountId, lastDate, communityId, takeCount);
 			
 			return posts;
@@ -80,18 +98,38 @@ namespace Zest.Controllers
 		{
 			var user = User.Claims;
 			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+			var doesCommunityExists = await _communityService.DoesExistAsync(communityId);
+			if (!doesCommunityExists)
+			{
+				return BadRequest("Community does not exists");
+			}
 			var posts = await _postService.GetByCommunityAsync(communityId);
 			
 			return posts;
 		}
 
-		[Route("getBySearch/{search}/{takeCount}")]
+		[Route("getBySearch/{search}/{takeCount}/{communityId}")]
 		[HttpPost]
-		public async Task<ActionResult<PostViewModel[]>> GetBySearch(string search, int takeCount, [FromBody] int[]? skipIds)
+		public async Task<ActionResult<PostViewModel[]>> GetBySearch(string search, int takeCount, int communityId, [FromBody] int[]? skipIds)
 		{
 			var user = User.Claims;
 			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-			var posts = await _postService.GetBySearchAsync(search, accountId, takeCount, skipIds);
+			if (string.IsNullOrWhiteSpace(search))
+			{
+				return BadRequest("Search is empty!");
+
+			}
+			if (communityId !=0)
+			{
+				var doesCommunityExists = await _communityService.DoesExistAsync(communityId);
+				if (!doesCommunityExists)
+				{
+					return BadRequest("Community does not exists");
+				}
+			}
+			
+			var posts = await _postService.GetBySearchAsync(search, accountId, takeCount, communityId, skipIds);
 			
 			return posts;
 		}
@@ -101,7 +139,15 @@ namespace Zest.Controllers
 		{
 			var user = User.Claims;
 			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-			var posts = await _postService.GetTrending(skipIds, takeCount, accountId,communityId);
+			if (communityId !=0)
+			{
+				var doesCommunityExists = await _communityService.DoesExistAsync(communityId);
+				if (!doesCommunityExists)
+				{
+					return BadRequest("Community does not exists");
+				}
+			}
+			var posts = await _postService.GetTrendingAsync(skipIds, takeCount, accountId, communityId);
 			
 			return posts.ToArray();
 		}

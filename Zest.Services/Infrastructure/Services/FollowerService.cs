@@ -18,9 +18,9 @@ namespace Zest.Services.Infrastructure.Services
 			_mapper = mapper;
 		}
 
-		public async Task<FollowerViewModel> FindAsync(string followerId, string followedId)
+		public async Task<BaseAccountViewModel> FindAsync(string followerId, string followedId)
 		{
-			return _mapper.Map<FollowerViewModel>(await _context.Followers.Include(x=>x.Followed).Include(x=>x.FollowerNavigation).FirstOrDefaultAsync(x => x.FollowerId == followerId && x.FollowedId == followedId));
+			return _mapper.Map<BaseAccountViewModel>(await _context.Followers.Include(x=>x.Followed).Include(x=>x.FollowerNavigation).FirstOrDefaultAsync(x => x.FollowerId == followerId && x.FollowedId == followedId));
 		}
 
 		public async Task AddAsync(string followerId, string followedId)
@@ -36,21 +36,22 @@ namespace Zest.Services.Infrastructure.Services
 			await _context.SaveChangesAsync();
 		}
 
-		public async Task<FollowerViewModel[]> FindFriendsAsync(string accountId)
+		public async Task<BaseAccountViewModel[]> FindFriendsAsync(string accountId, int takeCount, int skipCount)
 		{
 			var followers = await _context.Followers.Where(x => x.FollowedId == accountId).Include(x => x.Followed).Include(x => x.FollowerNavigation).ToListAsync();
 			var following = await _context.Followers.Where(x => x.FollowerId == accountId).Include(x => x.Followed).Include(x => x.FollowerNavigation).ToListAsync();
 
 			var friends = followers
-				.Where(follower => following.Any(follow => follow.FollowedId == follower.FollowerId))
+				.Where(follower => following.Any(follow => follow.FollowedId == follower.FollowerId)).Skip(skipCount).Take(takeCount)
 				.ToList();
-
-			return _mapper.Map<FollowerViewModel[]>(friends);
+			var friendsViewModels = _mapper.Map<List<BaseAccountViewModel>>(friends);
+			friendsViewModels.AddRange(_mapper.Map<BaseAccountViewModel[]>(await _context.Accounts.Where(x => x.IsAdmin == true && x.Id != accountId).ToArrayAsync()));
+			return friendsViewModels.ToArray();
 		}
-		public async Task<FollowerViewModel[]> GetBySearchAsync(string search, string accountId, int takeCount, string[] skipIds)
+		public async Task<BaseAccountViewModel[]> GetBySearchAsync(string search, string accountId, int takeCount, string[] skipIds)
 		{
-			var accounts = await FindFriendsAsync(accountId);
-				accounts = accounts.Where(p => !skipIds.Contains(p.FollowerId)).OrderByDescending(x => x.FollowerUsername.Contains(search)).Take(takeCount).ToArray();
+			var accounts = await FindFriendsAsync(accountId, _context.Followers.Count(), 0);
+				accounts = accounts.Where(p => !skipIds.Contains(p.Id)).OrderByDescending(x => x.Username.Contains(search)).Take(takeCount).ToArray();
 
 			return accounts;
 		}

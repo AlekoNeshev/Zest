@@ -10,13 +10,15 @@ namespace Zest.Services.Mapper
 		{
 			CreateMap<Account, AccountViewModel>()
 				.ForMember(dest => dest.CreatedOn1, op => op.MapFrom(src => src.CreatedOn))
-			.ForMember(dest => dest.Email, op => op.MapFrom(src => src.Email));
+			.ForMember(dest => dest.IsAdmin, op => op.MapFrom(src => src.IsAdmin));
+			CreateMap<Account, BaseAccountViewModel>();
 			CreateMap<Post, PostViewModel>()
 				.ForMember(dest => dest.Publisher, op => op.MapFrom(src => src.Account.Username))
 				.ForMember(dest => dest.PostedOn, op => op.MapFrom(src => src.CreatedOn))
 				.ForMember(dest => dest.Likes, op => op.MapFrom(src => src.Likes.Where(x => x.Value == true).Count()))
 				.ForMember(dest => dest.Dislikes, op => op.MapFrom(src => src.Likes.Where(x => x.Value == false).Count()))
 				.ForMember(dest => dest.CommunityName, op => op.MapFrom(src => src.Community.Name))
+				.ForMember(dest => dest.CommunityId, op => op.MapFrom(src => src.Community.Id))
 				.ForMember(dest => dest.ResourceType, op => op.MapFrom(src => src.PostResources.FirstOrDefault().Type))
 			   .AfterMap((src, dest) =>
 			   {
@@ -46,9 +48,9 @@ namespace Zest.Services.Mapper
 				.ForMember(dest => dest.Description, op => op.MapFrom(src => src.Information))
 				.ForMember(dest => dest.Creator, op => op.MapFrom(src => src.Creator.Username));
 
-			CreateMap<Follower, FollowerViewModel>()
-				.ForMember(dest => dest.FollowerId, op => op.MapFrom(src => src.FollowerId))
-				.ForMember(dest => dest.FollowerUsername, op => op.MapFrom(src => src.FollowerNavigation.Username));
+			CreateMap<Follower, BaseAccountViewModel>()
+				.ForMember(dest => dest.Id, op => op.MapFrom(src => src.FollowerId))
+				.ForMember(dest => dest.Username, op => op.MapFrom(src => src.FollowerNavigation.Username));
 
 			CreateMap<Message, MessageViewModel>()
 			   .ForMember(dest => dest.SenderUsername, op => op.MapFrom(src => src.Sender.Username))

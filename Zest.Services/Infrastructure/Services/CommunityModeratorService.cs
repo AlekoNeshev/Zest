@@ -18,10 +18,14 @@ namespace Zest.Services.Infrastructure.Services
 		}
 		public async Task<bool> IsModeratorAsync(string accountId, int communityId)
 		{
-			var cm = context.CommunityModerators.FirstOrDefault(x => x.AccountId == accountId && x.CommunityId == communityId && x.IsApproved == true);
+			var cm = await context.CommunityModerators.FirstOrDefaultAsync(x => x.AccountId == accountId && x.CommunityId == communityId && x.IsApproved == true);
 			return cm != null;
 		}
-
+		public async Task<bool> IsModeratorCandidateAsync(string accountId, int communityId)
+		{
+			var cm = await context.CommunityModerators.FirstOrDefaultAsync(x => x.AccountId == accountId && x.CommunityId == communityId && x.IsApproved == false);
+			return cm != null;
+		}
 		public async Task AddModeratorAsync(string accountId, int communityId)
 		{
 			context.Add(new CommunityModerator { AccountId = accountId, CommunityId = communityId, IsApproved = false, CreatedOn = DateTime.Now });
@@ -40,7 +44,7 @@ namespace Zest.Services.Infrastructure.Services
 
 		public async Task ApproveCandidateAsync(string accountId, int communityId)
 		{
-			var candidate = context.CommunityModerators.Where(x => x.AccountId == accountId && x.CommunityId == communityId).FirstOrDefault();
+			var candidate = await context.CommunityModerators.Where(x => x.AccountId == accountId && x.CommunityId == communityId).FirstOrDefaultAsync();
 			if (candidate != null)
 			{
 				candidate.IsApproved = true;
@@ -50,7 +54,7 @@ namespace Zest.Services.Infrastructure.Services
 
 		public async Task RemoveModeratorAsync(string accountId, int communityId)
 		{
-			var candidate = context.CommunityModerators.Where(x => x.AccountId == accountId && x.CommunityId == communityId).FirstOrDefault();
+			var candidate = await context.CommunityModerators.Where(x => x.AccountId == accountId && x.CommunityId == communityId).FirstOrDefaultAsync();
 			if (candidate != null)
 			{
 				context.CommunityModerators.Remove(candidate);

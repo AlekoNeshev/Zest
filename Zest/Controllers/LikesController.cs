@@ -14,27 +14,42 @@ namespace Zest.Controllers
 	{
 		private readonly ILikeService _likeService;
 		private readonly IHubContext<LikesHub> _likesHubContext;
-
-		public LikesController(ILikeService likeService, IHubContext<LikesHub> likesHubContext)
+		private readonly IPostService _postService;
+		private readonly ICommentsService _commentsService;
+		public LikesController(ILikeService likeService, IHubContext<LikesHub> likesHubContext, IPostService postService, ICommentsService commentsService)
 		{
 			_likeService = likeService;
 			_likesHubContext = likesHubContext;
+			_postService=postService;
+			_commentsService=commentsService;
 		}
 
 		[Route("add/post/{postId}/comment/{commentId}/value/{value}")]
 		[HttpPost]
-		public async Task<ActionResult> Add(int postId, int commentId, bool value)
+		public async Task<IActionResult> Add(int postId, int commentId, bool value)
 		{
 			var user = User.Claims;
 			var likerId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
+			var doesPostExist = await _postService.DoesExist(postId);
+			if (!doesPostExist)
+			{
+				return BadRequest("Post does not exist!");
+			}
+
 			if (postId != 0 && commentId == 0)
 			{
-				await _likeService.AddLikeToPost(likerId, postId, value);
+				
+				await _likeService.AddLikeToPostAsync(likerId, postId, value);
 			}
 			else if (commentId != 0)
 			{
-				await _likeService.AddLikeToComment(likerId, commentId, value);
+				var doesCommentExist = await _commentsService.DoesExist(commentId);
+				if (!doesCommentExist)
+				{
+					return BadRequest("Comment does not exist");
+				}
+				await _likeService.AddLikeToCommentAsync(likerId, commentId, value);
 			}
 
 			if (commentId == 0)
@@ -43,7 +58,7 @@ namespace Zest.Controllers
 			}
 			else if (commentId != 0)
 			{
-				await _likesHubContext.Clients.Group(("pd-" + postId.ToString())).SendAsync("CommentLiked", commentId);
+				await _likesHubContext.Clients.Group(("pdl-" + postId.ToString())).SendAsync("CommentLiked", commentId);
 			}
 
 			return Ok();
@@ -55,8 +70,20 @@ namespace Zest.Controllers
 		{
 			var user = User.Claims;
 			var likerId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
-			await _likeService.RemoveLike(likeId);
+			var doesPostExist = await _postService.DoesExist(postId);
+			if (!doesPostExist)
+			{
+				return BadRequest("Post does not exist!");
+			}
+			if(commentId !=  0)
+			{
+				var doesCommentExist = await _commentsService.DoesExist(commentId);
+				if (!doesCommentExist)
+				{
+					return BadRequest("Comment does not exist");
+				}
+			}
+			await _likeService.RemoveLikeAsync(likeId);
 
 			if (commentId == 0)
 			{

@@ -21,14 +21,15 @@ namespace Zest.Controllers
     public class CommentsController : ControllerBase
     {
 		private readonly ICommentsService _commentsService;
+		private readonly IPostService _postService;
 		private readonly IHubContext<DeleteHub> _deleteHubContext;
 
 
-		public CommentsController(ICommentsService commentsService, IHubContext<DeleteHub> hubContext)
+		public CommentsController(ICommentsService commentsService, IHubContext<DeleteHub> hubContext, IPostService postService)
 		{
 			_commentsService = commentsService;
 			_deleteHubContext = hubContext;
-			
+			_postService=postService;
 		}
 
 		[HttpGet]
@@ -43,10 +44,24 @@ namespace Zest.Controllers
 
 		[Route("add/post/{postId}/comment/{commentId}")]
 		[HttpPost]
-		public async Task<ActionResult> Add(int postId, [FromBody] string text, int commentId = 0)
+		public async Task<IActionResult> Add(int postId, [FromBody] string text, int commentId = 0)
 		{
 			var user = User.Claims;
 			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+			var doesPostExist = await _postService.DoesExist(postId);
+			if (!doesPostExist)
+			{
+				return BadRequest("Post does not exist!");
+			}
+			if(commentId != 0)
+			{
+				var doesCommentExist = await _commentsService.DoesExist(commentId);
+				if (!doesCommentExist)
+				{
+					return BadRequest("Comment does not exist");
+				}
+			}
 
 			var newComment = await _commentsService.AddAsync(accountId, postId, text, commentId);
 			
@@ -62,15 +77,20 @@ namespace Zest.Controllers
 			}
 			
 			
-			return BadRequest();
+			
 		}
 
 		[Route("remove/{commentId}/{postId}")]
 		[HttpPut]
-		public async Task<ActionResult> Remove(int commentId, int postId)
-		{		
+		public async Task<IActionResult> Remove(int commentId, int postId)
+		{
+			var doesCommentExist = await _commentsService.DoesExist(commentId);
+			if(!doesCommentExist)
+			{
+				return BadRequest("Comment does not exist");
+			}
 			await _commentsService.RemoveAsync(commentId);
-			await _deleteHubContext.Clients.Group(("comment-" + postId.ToString())).SendAsync("CommentDeleted", commentId);
+			await _deleteHubContext.Clients.Group(("pdd-" + postId.ToString())).SendAsync("CommentDeleted", commentId);
 			return Ok(commentId);
 		}
 
@@ -78,6 +98,11 @@ namespace Zest.Controllers
 		[HttpGet]
 		public async Task<ActionResult<CommentViewModel[]>> GetCommentsByPost(int postId, [FromRoute] DateTime lastDate, int takeCount)
 		{
+			var doesPostExist = await _postService.DoesExist(postId);
+			if (!doesPostExist)
+			{
+				return BadRequest("Post does not exist!");
+			}
 			var user = User.Claims;
 			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 			var comments = await _commentsService.GetCommentsByPostIdAsync(postId, lastDate, takeCount, accountId);
@@ -88,9 +113,14 @@ namespace Zest.Controllers
 		[HttpPost]
 		public async Task<ActionResult<CommentViewModel[]>> GetByTrending(int takeCount, int postId, [FromBody] int[]? skipIds)
 		{
+			var doesPostExist = await _postService.DoesExist(postId);
+			if (!doesPostExist)
+			{
+				return BadRequest("Post does not exist!");
+			}
 			var user = User.Claims;
 			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-			var posts = await _commentsService.GetTrending(skipIds, takeCount, accountId, postId);
+			var posts = await _commentsService.GetTrendingCommentsAsync(skipIds, takeCount, accountId, postId);
 
 			return posts.ToArray();
 		}

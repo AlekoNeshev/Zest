@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 using Zest.DBModels;
 using Zest.DBModels.Models;
 using Zest.Services.Infrastructure.Interfaces;
@@ -18,17 +19,31 @@ namespace Zest.Services.Infrastructure.Services
 			_mapper = mapper;
 		}
 
-		public async Task<CommunityViewModel> GetCommunityByIdAsync(int id)
+		public async Task<bool> DoesExistAsync(int id)
 		{
-			return _mapper.Map<CommunityViewModel>(await _context.Communities.Include(x=>x.Creator).FirstOrDefaultAsync(x=>x.Id == id));
+			var post = await _context.Communities.FirstOrDefaultAsync(x => x.Id == id);
+			if (post == null)
+			{
+				return false;
+			}
+			return true;
+		}
+		public async Task<CommunityViewModel> GetCommunityByIdAsync(int id, string accountId)
+		{
+			var community = _mapper.Map<CommunityViewModel>(await _context.Communities.Include(x => x.Creator).FirstOrDefaultAsync(x => x.Id == id));
+			community.IsSubscribed = await _context.CommunityFollowers.Where(x => x.CommunityId == id && x.AccountId == accountId).FirstOrDefaultAsync() != null;
+			return community;
 
 		}
 
 		public async Task<CommunityViewModel[]> GetAllCommunitiesAsync(string accountId, int skipCount, int takeCount)
 		{
-			var communities = await _context.Communities.Include(x => x.Creator).Skip(skipCount).Take(takeCount).ToArrayAsync();
-			
-			return _mapper.Map<CommunityViewModel[]>(communities);
+			var communities = _mapper.Map<CommunityViewModel[]>(await _context.Communities.Include(x => x.Creator).Skip(skipCount).Take(takeCount).ToArrayAsync());
+			foreach (var community in communities) 
+			{
+				community.IsSubscribed = await _context.CommunityFollowers.Where(x => x.CommunityId == community.Id && x.AccountId == accountId).FirstOrDefaultAsync() != null;
+			}
+			return communities;
 		}
 
 		public async Task<int> AddCommunityAsync(string creatorId, string name, string discription)
@@ -56,15 +71,16 @@ namespace Zest.Services.Infrastructure.Services
 		}
 		public async Task<CommunityViewModel[]> GetCommunitiesByAccount(string accountId, int takeCount, int skipCount)
 		{
-			
-			return _mapper.Map<CommunityViewModel[]>(_context.CommunityFollowers.Where(x => x.AccountId==accountId).Skip(skipCount).Take(takeCount).Include(x=>x.Community).Select(x => x.Community).ToArray());
+			var communities = _mapper.Map<CommunityViewModel[]>(_context.CommunityFollowers.Where(x => x.AccountId==accountId).Skip(skipCount).Take(takeCount).Include(x => x.Community).Select(x => x.Community).ToArray());
+			foreach (var community in communities)
+			{
+				community.IsSubscribed = await _context.CommunityFollowers.Where(x => x.CommunityId == community.Id && x.AccountId == accountId).FirstOrDefaultAsync() != null;
+			}
+			return communities;
 		}
-		public async Task<CommunityViewModel[]> GetTrendingCommunities(int[] skipIds, int takeCount)
-		{
-			
-
+		public async Task<CommunityViewModel[]> GetTrendingCommunitiesAsync(int[] skipIds, int takeCount, string accountId)
+		{	
 			var filteredCommunities = _context.Communities.Include(x=>x.Posts).ThenInclude(x=>x.Comments).Include(x=>x.Creator).Where(c => !skipIds.Contains(c.Id)).ToArray();
-
 
 			var communityScores = new List<(Community Community, int Score)>();
 
@@ -74,8 +90,12 @@ namespace Zest.Services.Infrastructure.Services
 				var score = CalculateCommunityScore(userCount, postCount, likeCount, commentCount);
 				communityScores.Add((Community: community, Score: score));
 			}
-
-			return _mapper.Map<CommunityViewModel[]>(communityScores.OrderByDescending(c => c.Score).Take(takeCount).Select(c => c.Community).ToArray());
+			var communities = _mapper.Map<CommunityViewModel[]>(communityScores.OrderByDescending(c => c.Score).Take(takeCount).Select(c => c.Community).ToArray());
+			foreach (var community in communities)
+			{
+				community.IsSubscribed = await _context.CommunityFollowers.Where(x => x.CommunityId == community.Id && x.AccountId == accountId).FirstOrDefaultAsync() != null;
+			}
+			return communities;
 		}
 		private (int userCount, int postCount, int likeCount, int commentCount) CalculateCommunityStats(Community community)
 		{
@@ -97,7 +117,7 @@ namespace Zest.Services.Infrastructure.Services
 
 			return userWeight * userCount + postWeight * postCount + likeWeight * likeCount + commentWeight * commentCount;
 		}
-		public async Task<CommunityViewModel[]> GetBySearchAsync(string search, int takeCount, int[] skipIds)
+		public async Task<CommunityViewModel[]> GetBySearchAsync(string search, string accountId,int takeCount, int[] skipIds)
 		{
 			var communities = _mapper.Map<CommunityViewModel[]>(await _context.Communities.Where(p => !skipIds.Contains(p.Id))
 				.OrderByDescending(x => x.Name.Contains(search))
@@ -105,8 +125,19 @@ namespace Zest.Services.Infrastructure.Services
 				.ThenByDescending(x => x.CreatedOn)
 				.Take(takeCount)
 				.ToArrayAsync());
-			
+
+			foreach (var community in communities)
+			{
+				community.IsSubscribed = await _context.CommunityFollowers.Where(x => x.CommunityId == community.Id && x.AccountId == accountId).FirstOrDefaultAsync() != null;
+			}
+
 			return communities;
+		}
+		public async Task DeleteCommunityAsync(int communityId)
+		{
+			var community = await _context.Communities.FindAsync(communityId);
+			_context.Communities.Remove(community);
+			await _context.SaveChangesAsync();
 		}
 	}
 }

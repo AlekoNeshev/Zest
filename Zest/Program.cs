@@ -17,7 +17,6 @@ namespace Zest
 			// Add services to the container.
 
 			builder.Services.AddControllers();
-			builder.Services.AddScoped<UserConnectionService>();
 			builder.Services.AddScoped<SignaRGroupsPlaceholder>();
 			builder.Services.AddScoped<IAccountService, AccountService>();
 			builder.Services.AddScoped<ICommentsService, CommentsService>();

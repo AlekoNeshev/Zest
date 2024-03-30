@@ -34,6 +34,11 @@ namespace Zest.Controllers
 		public async Task<IActionResult> Add(int communityId)
 		{
 			var accountId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			bool doesFolloweshipExist = await _communityFollowerService.DoesExistAsync(accountId, communityId);
+			if(doesFolloweshipExist)
+			{
+				return BadRequest("Followship already exists");
+			}
 			await _communityFollowerService.AddAsync(accountId, communityId);
 			return Ok();
 		}
@@ -43,6 +48,11 @@ namespace Zest.Controllers
 		public async Task<IActionResult> Delete(int communityId)
 		{
 			var accountId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			bool doesFolloweshipExist = await _communityFollowerService.DoesExistAsync(accountId, communityId);
+			if (doesFolloweshipExist)
+			{
+				return BadRequest("Followship does not exist");
+			}
 			await _communityFollowerService.DeleteAsync(accountId, communityId);
 			return Ok();
 		}

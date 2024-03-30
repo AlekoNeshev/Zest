@@ -10,10 +10,10 @@ namespace Zest.Services.Infrastructure.Interfaces
 {
 	public interface IFollowerService
 	{
-		Task<FollowerViewModel> FindAsync(string followerId, string followedId);
+		Task<BaseAccountViewModel> FindAsync(string followerId, string followedId);
 		Task AddAsync(string followerId, string followedId);
 		Task DeleteAsync(string followerId, string followedId);
-		Task<FollowerViewModel[]> FindFriendsAsync(string accountId);
-		Task<FollowerViewModel[]> GetBySearchAsync(string search, string accountId, int takeCount, string[]? skipIds);
+		Task<BaseAccountViewModel[]> FindFriendsAsync(string accountId, int takeCount, int skipCount);
+		Task<BaseAccountViewModel[]> GetBySearchAsync(string search, string accountId, int takeCount, string[]? skipIds);
 	}
 }

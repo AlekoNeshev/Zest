@@ -7,7 +7,8 @@ using Zest.DBModels;
 using Zest.DBModels.Models;
 using Zest.Services.Infrastructure.Interfaces;
 using Zest.ViewModels.ViewModels;
-
+using Microsoft.Extensions.DependencyInjection;
+using System.Security.Claims;
 namespace Zest.Services.Infrastructure.Services
 {
 	public class CommentsService : ICommentsService
@@ -20,9 +21,18 @@ namespace Zest.Services.Infrastructure.Services
 			_context = context;
 			this._mapper = mapper;
 		}
-
+		public async Task<bool> DoesExist(int id)
+		{
+			var post = await _context.Comments.FirstOrDefaultAsync(x => x.Id == id);
+			if (post == null)
+			{
+				return false;
+			}
+			return true;
+		}
 		public async Task<CommentViewModel> FindAsync(int id, string accountId)
 		{
+			
 			var comment = _mapper.Map<CommentViewModel>(await _context.Comments.Include(x => x.Account)
 	.Include(x => x.Account)
 	.Include(x => x.Likes)
@@ -38,7 +48,7 @@ namespace Zest.Services.Infrastructure.Services
 			await FindLike(comment.Replies, accountId);
 			return comment;
 		}
-		private async Task<Comment> FindCommentAsync(int id)
+		private async Task<Comment?> FindCommentAsync(int id)
 		{
 			var comment = await _context.Comments.FindAsync(id);
 			return comment;
@@ -64,9 +74,12 @@ namespace Zest.Services.Infrastructure.Services
 		public async Task RemoveAsync(int id)
 		{
 			var comment = await FindCommentAsync(id);
-			comment.IsDeleted = true;
-			_context.Update(comment);
-			await _context.SaveChangesAsync();
+			if(comment != null)
+			{
+				comment.IsDeleted = true;
+				_context.Update(comment);
+				await _context.SaveChangesAsync();
+			}		
 
 		}
 
@@ -96,7 +109,7 @@ namespace Zest.Services.Infrastructure.Services
 			}
 			return comments;
 		}
-		public async Task<CommentViewModel[]> GetTrending(int[] skipIds, int takeCount, string accountId, int postId)
+		public async Task<CommentViewModel[]> GetTrendingCommentsAsync(int[] skipIds, int takeCount, string accountId, int postId)
 		{
 
 

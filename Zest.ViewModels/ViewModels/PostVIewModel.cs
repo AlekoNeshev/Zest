@@ -13,6 +13,7 @@ namespace Zest.ViewModels.ViewModels
         public string Text { get; set; }
         public string Publisher { get; set; }
         public string CommunityName { get; set; }
+        public int CommunityId { get; set; }
         public bool IsOwner { get; set; }
         public int Likes { get; set; }
         public int Dislikes { get; set; }

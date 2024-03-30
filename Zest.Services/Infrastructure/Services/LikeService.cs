@@ -13,9 +13,9 @@ namespace Zest.Services.Infrastructure.Services
 			_context = context;
 		}
 
-		public async Task AddLikeToPost(string accountId, int postId, bool value)
+		public async Task AddLikeToPostAsync(string accountId, int postId, bool value)
 		{
-			_context.Likes.Add(new Like
+			await _context.Likes.AddAsync(new Like
 			{
 				AccountId = accountId,
 				PostId = postId,
@@ -26,9 +26,9 @@ namespace Zest.Services.Infrastructure.Services
 			await _context.SaveChangesAsync();
 		}
 
-		public async Task AddLikeToComment(string accountId, int commentId, bool value)
+		public async Task AddLikeToCommentAsync(string accountId, int commentId, bool value)
 		{
-			_context.Likes.Add(new Like
+			await _context.Likes.AddAsync(new Like
 			{
 				AccountId = accountId,
 				CommentId = commentId,
@@ -41,7 +41,7 @@ namespace Zest.Services.Infrastructure.Services
 
 		
 
-		public async Task RemoveLike(int likeId)
+		public async Task RemoveLikeAsync(int likeId)
 		{
 			var like = await _context.Likes.FindAsync(likeId);
 			

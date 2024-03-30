@@ -2,25 +2,17 @@
 
 using Zest.Services.Infrastructure.Services;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Zest.Services.Hubs
 {
+	[AllowAnonymous]
 	public class DeleteHub : Hub
 	{
-		private readonly UserConnectionService _notificationService;
-		public DeleteHub(UserConnectionService userConnectionService)
+		public DeleteHub()
 		{
-			_notificationService = userConnectionService;
-		}
-		public override async Task OnConnectedAsync()
-		{
-			var connectionId = Context.ConnectionId;
 			
-			var uniqueProperty = Context.GetHttpContext().Request.Headers["userId"];
-
-			_notificationService.AddConnection(uniqueProperty, connectionId);
-
-			await base.OnConnectedAsync();
 		}
+		
 	}
 }

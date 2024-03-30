@@ -8,8 +8,8 @@ namespace Zest.Services.Infrastructure.Interfaces
 {
 	public interface ILikeService
 	{
-		Task AddLikeToPost(string accountId, int postId, bool value);
-		Task AddLikeToComment(string accountId, int commentId, bool value);
-		Task RemoveLike(int likeId);
+		Task AddLikeToPostAsync(string accountId, int postId, bool value);
+		Task AddLikeToCommentAsync(string accountId, int commentId, bool value);
+		Task RemoveLikeAsync(int likeId);
 	}
 }

@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Identity.Client;
 using System.Security.Claims;
+using Zest.DBModels.Models;
 using Zest.Services.Hubs;
 using Zest.Services.Infrastructure.Interfaces;
 using Zest.ViewModels.ViewModels;
@@ -16,12 +18,12 @@ namespace Zest.Controllers
     {
 		private readonly IMessageService _messageService;
 		private readonly IHubContext<MessageHub> _hubContext;
-
-		public MessagesController(IMessageService messageService, IHubContext<MessageHub> hubContext)
+		private readonly IAccountService _accountService;
+		public MessagesController(IMessageService messageService, IHubContext<MessageHub> hubContext, IAccountService accountService)
 		{
 			_messageService = messageService;
 			_hubContext = hubContext;
-			
+			_accountService=accountService;
 		}
 
 		[Route("get/{id}")]
@@ -38,6 +40,11 @@ namespace Zest.Controllers
 		{
 			var user = User.Claims;
 			var senderId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var doesAccountExists = await _accountService.DoesExistAsync(receiverId);
+			if (!doesAccountExists)
+			{
+				return BadRequest("Account does not exists");
+			}
 			var messages = await _messageService.GetMessagesBySenderAndReceiverIdsAsync(senderId, receiverId, takeCount, date);
 			return messages.ToArray();
 		}
@@ -48,6 +55,12 @@ namespace Zest.Controllers
 		{
 			var user = User.Claims;
 			var senderId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var doesAccountExists = await _accountService.DoesExistAsync(receiverId);
+			if (!doesAccountExists)
+			{
+				return BadRequest("Account does not exists");
+			}
+
 			var message = await _messageService.AddAsync(senderId, receiverId, text);
 
 			int comparisonResult = string.Compare(senderId, receiverId);
@@ -69,16 +82,7 @@ namespace Zest.Controllers
 			return Ok(message.Id);
 		}
 
-		[Route("remove/receiver/{receiverId}")]
-		[HttpDelete]
-		public async Task<ActionResult> Remove(string receiverId)
-		{
-			var user = User.Claims;
-			var senderId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-			var message = await _messageService.FindBySenderIdAndReceiverIdAsync(senderId, receiverId);
-			await _messageService.RemoveAsync(message.Id);
-			return Ok();
-		}
+		
 	}
 
 }
