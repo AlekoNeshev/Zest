@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using Zest.DBModels;
 using Zest.DBModels.Models;
+using Zest.Services.Infrastructure.Interfaces;
 
 namespace Zest.Controllers
 {
@@ -13,56 +14,46 @@ namespace Zest.Controllers
 	[ApiController]
 	public class CommunityFollowersController : ControllerBase
 	{
-		private ZestContext context;
+		private readonly ICommunityFollowerService _communityFollowerService;
 
-		public CommunityFollowersController(ZestContext context)
+		public CommunityFollowersController(ICommunityFollowerService communityFollowerService)
 		{
-			this.context = context;
+			_communityFollowerService = communityFollowerService;
 		}
-		
+
 		[HttpGet]
 		public async Task<ActionResult<bool>> DoesExist(int communityId)
 		{
-			var user = User.Claims;
-			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-			CommunityFollower communityFollower = this.context.CommunityFollowers.Where(x => x.AccountId == accountId && x.CommunityId == communityId).FirstOrDefault();
-			if (communityFollower == null)
-			{
-				return false;
-			}
-
-			return true;
+			var accountId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			bool doesExist = await _communityFollowerService.DoesExistAsync(accountId, communityId);
+			return doesExist;
 		}
-		
+
 		[Route("account/add/community/{communityId}")]
 		[HttpPost]
-		public async Task<ActionResult> Add(int communityId)
+		public async Task<IActionResult> Add(int communityId)
 		{
-			var user = User.Claims;
-			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-			CommunityFollower communityFollower = this.context.CommunityFollowers.Where(x => x.AccountId == accountId && x.CommunityId == communityId).FirstOrDefault();
-			if (communityFollower == null)
+			var accountId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			bool doesFolloweshipExist = await _communityFollowerService.DoesExistAsync(accountId, communityId);
+			if(doesFolloweshipExist)
 			{
-				context.Add(new CommunityFollower { AccountId = accountId, CommunityId = communityId, CreatedOn = DateTime.Now });
-				context.SaveChanges();
+				return BadRequest("Followship already exists");
 			}
-
+			await _communityFollowerService.AddAsync(accountId, communityId);
 			return Ok();
 		}
-		
+
 		[Route("account/delete/community/{communityId}")]
 		[HttpDelete]
-		public async Task<ActionResult> Delete(int communityId)
+		public async Task<IActionResult> Delete(int communityId)
 		{
-			var user = User.Claims;
-			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-			CommunityFollower communityFollower = this.context.CommunityFollowers.Where(x => x.AccountId == accountId && x.CommunityId == communityId).FirstOrDefault();
-
-			if (communityFollower != null)
+			var accountId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			bool doesFolloweshipExist = await _communityFollowerService.DoesExistAsync(accountId, communityId);
+			if (doesFolloweshipExist)
 			{
-				context.Remove(communityFollower);
-				context.SaveChanges();
+				return BadRequest("Followship does not exist");
 			}
+			await _communityFollowerService.DeleteAsync(accountId, communityId);
 			return Ok();
 		}
 	}

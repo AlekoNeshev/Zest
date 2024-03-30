@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Zest.DBModels;
 using Zest.DBModels.Models;
+using Zest.Services.Infrastructure.Interfaces;
 using Zest.ViewModels.ViewModels;
 
 namespace Zest.Controllers
@@ -12,76 +13,100 @@ namespace Zest.Controllers
     [ApiController]
     public class CommunityModeratorsController : Controller
     {
-        private ZestContext context;
-		private IMapper mapper;
-		public CommunityModeratorsController(ZestContext context, IMapper mapper)
-        {
-            this.context = context;
-            this.mapper = mapper;
-        }
-        [Authorize]
-        [Route("isModerator/{accountId}/{communityId}")]
-        [HttpGet]
-        public async Task<ActionResult<bool>> Find(string accountId, int communityId)
-        {
-            var cm = context.CommunityModerators.FirstOrDefault(x=>x.AccountId == accountId && x.CommunityId==communityId&&x.IsApproved==true);
-            if (cm == null)
-                return false;
-            return true;
-        }
-        [Authorize]
-        [Route("add/{accountId}/{communityId}")]
-        [HttpPost]
-        public async Task<ActionResult> Add(string accountId, int communityId)
-        {
-			
-			context.Add(new CommunityModerator { AccountId = accountId, CommunityId = communityId, IsApproved=false,CreatedOn = DateTime.Now });
-            context.SaveChanges();
-            return Ok();
-        }
-        [Authorize]
-        [Route("getModerators/{communityId}")]
-        [HttpGet]
-        public async Task<UserViewModel[]> GetModeratorsByCommunity(int communityId)
-        {
-            return mapper.Map<UserViewModel[]>(context.CommunityModerators.Where(x=>x.CommunityId == communityId && x.IsApproved == true).Select(x=>x.Account)).ToArray();
-        }
+		private readonly ICommunityModeratorService _communityModeratorService;
+	private readonly ICommunityService _communityService;
+		private readonly IAccountService _accountService;
+		public CommunityModeratorsController(ICommunityModeratorService communityModeratorService, ICommunityService communityService, IAccountService accountService)
+		{
+			this._communityModeratorService = communityModeratorService;
+			_communityService=communityService;
+			_accountService=accountService;
+		}
+		[Authorize]
+		[Route("isModerator/{accountId}/{communityId}")]
+		[HttpGet]
+		public async Task<ActionResult<bool>> Find(string accountId, int communityId)
+		{
+			return await _communityModeratorService.IsModeratorAsync(accountId, communityId);
+		}
+
+		[Authorize]
+		[Route("add/{accountId}/{communityId}")]
+		[HttpPost]
+		public async Task<IActionResult> Add(string accountId, int communityId)
+		{
+			var isCandidate = await _communityModeratorService.IsModeratorCandidateAsync(accountId, communityId);
+			if (isCandidate)
+			{
+				return BadRequest("User is already candidate");
+			}
+			await _communityModeratorService.AddModeratorAsync(accountId, communityId);
+			return Ok();
+		}
+
+		[Authorize]
+		[Route("getModerators/{communityId}")]
+		[HttpGet]
+		public async Task<ActionResult<UserViewModel[]>> GetModeratorsByCommunity(int communityId)
+		{
+			var doesCommunityExists = await _communityService.DoesExistAsync(communityId);
+			if (!doesCommunityExists)
+			{
+				return BadRequest("Community does not exists");
+			}
+			return await _communityModeratorService.GetModeratorsByCommunityAsync(communityId);
+		}
+
 		[Authorize]
 		[Route("getCandidates/{communityId}")]
 		[HttpGet]
-		public async Task<UserViewModel[]> GetModeratorCandidatesByCommunity(int communityId)
+		public async Task<ActionResult<UserViewModel[]>> GetModeratorCandidatesByCommunity(int communityId)
 		{
-			return mapper.Map<UserViewModel[]>(context.CommunityModerators.Where(x => x.CommunityId == communityId && x.IsApproved == false).Select(x => x.Account)).ToArray();
-		}
-		[Authorize]
-        [Route("approveCandidate/{accountId}/{communityId}")]
-        [HttpPost]
-        public async Task<ActionResult> ApproveCandidate(string accountId, int communityId)
-        {
-            var candidate = context.CommunityModerators.Where(x=>x.AccountId == accountId && x.CommunityId == communityId).FirstOrDefault();
-            if(candidate != null)
-            {
-				candidate.IsApproved = true;
-                context.SaveChanges();
-                return Ok();
+			var doesCommunityExists = await _communityService.DoesExistAsync(communityId);
+			if (!doesCommunityExists)
+			{
+				return BadRequest("Community does not exists");
 			}
-            return BadRequest();
+			return await _communityModeratorService.GetModeratorCandidatesByCommunityAsync(communityId);
+		}
 
-        }
+		[Authorize]
+		[Route("approveCandidate/{accountId}/{communityId}")]
+		[HttpPost]
+		public async Task<IActionResult> ApproveCandidate(string accountId, int communityId)
+		{
+			var doesAccountExists = await _accountService.DoesExistAsync(accountId);
+			if (!doesAccountExists)
+			{
+				return BadRequest("Account does not exists");
+			}
+			var doesCommunityExists = await _communityService.DoesExistAsync(communityId);
+			if (!doesCommunityExists)
+			{
+				return BadRequest("Community does not exists");
+			}
+			await _communityModeratorService.ApproveCandidateAsync(accountId, communityId);
+			return Ok();
+		}
+
 		[Authorize]
 		[Route("removeModerator/{accountId}/{communityId}")]
 		[HttpPost]
-		public async Task<ActionResult> RemoveModerator(string accountId, int communityId)
+		public async Task<IActionResult> RemoveModerator(string accountId, int communityId)
 		{
-			var candidate = context.CommunityModerators.Where(x => x.AccountId == accountId && x.CommunityId == communityId).FirstOrDefault();
-			if (candidate != null)
+			var doesAccountExists = await _accountService.DoesExistAsync(accountId);
+			if (!doesAccountExists)
 			{
-				context.CommunityModerators.Remove(candidate);
-				context.SaveChanges();
-				return Ok();
+				return BadRequest("Account does not exists");
 			}
-			return BadRequest();
-
+			var doesCommunityExists = await _communityService.DoesExistAsync(communityId);
+			if (!doesCommunityExists)
+			{
+				return BadRequest("Community does not exists");
+			}
+			await _communityModeratorService.RemoveModeratorAsync(accountId, communityId);
+			return Ok();
 		}
+
 	}
 }

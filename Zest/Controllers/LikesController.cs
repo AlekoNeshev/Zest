@@ -1,87 +1,100 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
-using Zest.DBModels;
-using Zest.DBModels.Models;
-using Zest.Hubs;
-using Zest.Services;
+using Zest.Services.Hubs;
+using Zest.Services.Infrastructure.Interfaces;
 
 namespace Zest.Controllers
 {
 	[Authorize]
 	[Route("api/[controller]")]
-    [ApiController]
-    public class LikesController : ControllerBase
-    {
-        private ZestContext context;
-        private IHubContext<LikesHub> _LikesHubCont;
-        private UserConnectionService _UserConnectionService;
-		private SignaRGroupsPlaceholder likesHubConnectionService;
-		public LikesController(ZestContext context, IHubContext<LikesHub> lhc, UserConnectionService userConnectionService, SignaRGroupsPlaceholder likesHubConnectionService)
-        {
-            this.context = context;
-            this._LikesHubCont = lhc;
-            this._UserConnectionService = userConnectionService;
-            this.likesHubConnectionService = likesHubConnectionService;
-        }
-        [Route("add/post/{postId}/comment/{commentId}/value/{value}")]
-        [HttpPost]
-        public async Task<ActionResult> Add(int postId, int commentId, bool value)
-        {
+	[ApiController]
+	public class LikesController : ControllerBase
+	{
+		private readonly ILikeService _likeService;
+		private readonly IHubContext<LikesHub> _likesHubContext;
+		private readonly IPostService _postService;
+		private readonly ICommentsService _commentsService;
+		public LikesController(ILikeService likeService, IHubContext<LikesHub> likesHubContext, IPostService postService, ICommentsService commentsService)
+		{
+			_likeService = likeService;
+			_likesHubContext = likesHubContext;
+			_postService=postService;
+			_commentsService=commentsService;
+		}
+
+		[Route("add/post/{postId}/comment/{commentId}/value/{value}")]
+		[HttpPost]
+		public async Task<IActionResult> Add(int postId, int commentId, bool value)
+		{
 			var user = User.Claims;
 			var likerId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-			if (postId!=0 && commentId == 0)
-            {
-                context.Add(new Like
-                {
-                    AccountId = likerId,
-                    PostId = postId,
-                 
-                    Value = value,
-                    CreatedOn = DateTime.Now
-                });
-            }
-            else if(commentId !=0) 
-            {
-                context.Add(new Like
-                {
-                    AccountId = likerId,
-                  
-                    CommentId = commentId,
-                    Value = value,
-                    CreatedOn = DateTime.Now
-                });
-            }
-            context.SaveChanges();
-            if (commentId == 0)
-                await _LikesHubCont.Clients.Groups(postId.ToString()).SendAsync("PostLiked", postId);
-            else if (commentId != 0)
-            {
-				await _LikesHubCont.Clients.Groups(("pd-"+postId.ToString())).SendAsync("CommentLiked", commentId);
-				
+
+			var doesPostExist = await _postService.DoesExist(postId);
+			if (!doesPostExist)
+			{
+				return BadRequest("Post does not exist!");
 			}
-            return Ok();
-        }
-        [Route("remove/post/{postId}/comment/{commentId}")]
-        [HttpDelete]
-        public async Task<ActionResult> Remove(int postId, int commentId)
-        {
+
+			if (postId != 0 && commentId == 0)
+			{
+				
+				await _likeService.AddLikeToPostAsync(likerId, postId, value);
+			}
+			else if (commentId != 0)
+			{
+				var doesCommentExist = await _commentsService.DoesExist(commentId);
+				if (!doesCommentExist)
+				{
+					return BadRequest("Comment does not exist");
+				}
+				await _likeService.AddLikeToCommentAsync(likerId, commentId, value);
+			}
+
+			if (commentId == 0)
+			{
+				await _likesHubContext.Clients.Group(postId.ToString()).SendAsync("PostLiked", postId);
+			}
+			else if (commentId != 0)
+			{
+				await _likesHubContext.Clients.Group(("pdl-" + postId.ToString())).SendAsync("CommentLiked", commentId);
+			}
+
+			return Ok();
+		}
+
+		[Route("remove/like/{likeId}/{postId}/{commentId}")]
+		[HttpDelete]
+		public async Task<ActionResult> Remove(int likeId, int postId, int commentId)
+		{
 			var user = User.Claims;
 			var likerId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-			Like like = new Like();
-            if (postId!=0)
-            {
-                 like = context.Likes.FirstOrDefault(l => l.AccountId == likerId && l.PostId == postId);
-            }
-            else if (commentId!=0)
-            {
-                like = context.Likes.FirstOrDefault(l => l.AccountId == likerId && l.CommentId == commentId);
-            }
-            context.Remove(like);
-            context.SaveChanges();
-            return Ok();
-        }
-    }
+			var doesPostExist = await _postService.DoesExist(postId);
+			if (!doesPostExist)
+			{
+				return BadRequest("Post does not exist!");
+			}
+			if(commentId !=  0)
+			{
+				var doesCommentExist = await _commentsService.DoesExist(commentId);
+				if (!doesCommentExist)
+				{
+					return BadRequest("Comment does not exist");
+				}
+			}
+			await _likeService.RemoveLikeAsync(likeId);
+
+			if (commentId == 0)
+			{
+				await _likesHubContext.Clients.Group(postId.ToString()).SendAsync("PostLiked", postId);
+			}
+			else if (commentId != 0)
+			{
+				await _likesHubContext.Clients.Group(("pd-" + postId.ToString())).SendAsync("CommentLiked", commentId);
+			}
+		
+			return Ok();
+		}
+	}
 }

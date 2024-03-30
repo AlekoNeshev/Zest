@@ -1,13 +1,12 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Identity.Client;
 using System.Security.Claims;
-using Zest.DBModels;
 using Zest.DBModels.Models;
-using Zest.Hubs;
+using Zest.Services.Hubs;
+using Zest.Services.Infrastructure.Interfaces;
 using Zest.ViewModels.ViewModels;
 
 namespace Zest.Controllers
@@ -17,43 +16,53 @@ namespace Zest.Controllers
     [ApiController]
     public class MessagesController : ControllerBase
     {
-        private ZestContext context;
-        IMapper mapper;
-		private IHubContext<MessageHub> hubContext;
-		public MessagesController(ZestContext context, IMapper mapper, IHubContext<MessageHub> hubContext)
-        {
-            this.context=context;
-            this.mapper=mapper;
-            this.hubContext=hubContext;
-        }
-        [Route("get/{id}")]
-        [HttpGet]
-        public async Task<ActionResult<MessageViewModel>> Find(int id)
-        {
-            return mapper.Map<MessageViewModel>(context.Messages.Find(id));
-        }
-        [Route("get/receiver/{receiverId}")]
-        [HttpGet]
-		public async Task<ActionResult<MessageViewModel[]>> Add(string receiverId)
+		private readonly IMessageService _messageService;
+		private readonly IHubContext<MessageHub> _hubContext;
+		private readonly IAccountService _accountService;
+		public MessagesController(IMessageService messageService, IHubContext<MessageHub> hubContext, IAccountService accountService)
+		{
+			_messageService = messageService;
+			_hubContext = hubContext;
+			_accountService=accountService;
+		}
+
+		[Route("get/{id}")]
+		[HttpGet]
+		public async Task<ActionResult<MessageViewModel>> Find(int id)
+		{
+			var message = await _messageService.FindAsync(id);
+			return message;
+		}
+
+		[Route("get/receiver/{receiverId}/{takeCount}/{date}")]
+		[HttpGet]
+		public async Task<ActionResult<MessageViewModel[]>> GetMessagesByReceiverId(string receiverId, int takeCount, [FromRoute]DateTime date)
 		{
 			var user = User.Claims;
 			var senderId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-			Message[] messagesFromSender = context.Messages.Where(x => x.SenderId==senderId && x.ReceiverId==receiverId).ToArray();
-			Message[] messagesFromReceiver = context.Messages.Where(x => x.SenderId==receiverId && x.ReceiverId==senderId).ToArray();
-            Message[] messages = new Message[messagesFromSender.Length + messagesFromReceiver.Length];
-            Array.Copy(messagesFromSender, messages, messagesFromSender.Length);
-            Array.Copy(messagesFromReceiver, 0, messages, messagesFromSender.Length, messagesFromReceiver.Length);
-			return mapper.Map<MessageViewModel[]>(messages.OrderBy(x=>x.CreatedOn).ToArray());
+			var doesAccountExists = await _accountService.DoesExistAsync(receiverId);
+			if (!doesAccountExists)
+			{
+				return BadRequest("Account does not exists");
+			}
+			var messages = await _messageService.GetMessagesBySenderAndReceiverIdsAsync(senderId, receiverId, takeCount, date);
+			return messages.ToArray();
 		}
+
 		[Route("add/receiver/{receiverId}")]
-        [HttpPost]
-        public async Task<ActionResult> Add( string receiverId,[FromBody] string text)
-        {
+		[HttpPost]
+		public async Task<ActionResult> Add(string receiverId, [FromBody] string text)
+		{
 			var user = User.Claims;
 			var senderId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-			var message = context.Add(new Message { SenderId = senderId, ReceiverId = receiverId, Text = text, CreatedOn = DateTime.Now });
+			var doesAccountExists = await _accountService.DoesExistAsync(receiverId);
+			if (!doesAccountExists)
+			{
+				return BadRequest("Account does not exists");
+			}
 
-            context.SaveChanges();
+			var message = await _messageService.AddAsync(senderId, receiverId, text);
+
 			int comparisonResult = string.Compare(senderId, receiverId);
 			string firstHubId, secondHubId;
 
@@ -67,22 +76,13 @@ namespace Zest.Controllers
 				firstHubId = receiverId;
 				secondHubId = senderId;
 			}
-			var messageId = message.Property<int>("Id").CurrentValue;
-			await hubContext.Clients.Groups($"chat-{firstHubId}{secondHubId}").SendAsync("MessageSent", messageId);
-			
-			return Ok(messageId);
-        }
-        [Route("remove/receiver/{receiverId}")]
-        [HttpDelete]
-        public async Task<ActionResult> Remove(string receiverId)
-        {
-			var user = User.Claims;
-			var senderId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-			Message message = context.Messages.FirstOrDefault(m=>m.SenderId==senderId && m.ReceiverId==receiverId);
-            context.Messages.Remove(message);
-            context.SaveChanges();
-            return Ok();
-        }
-    }
+
+			await _hubContext.Clients.Groups($"chat-{firstHubId}{secondHubId}").SendAsync("MessageSent", message.Id);
+
+			return Ok(message.Id);
+		}
+
+		
+	}
 
 }

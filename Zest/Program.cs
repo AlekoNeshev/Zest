@@ -1,10 +1,10 @@
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
 using Zest.DBModels;
-using Zest.Hubs;
-using Zest.Services;
+using Zest.Services.Hubs;
+using Zest.Services.Infrastructure.Interfaces;
+using Zest.Services.Infrastructure.Services;
+using Zest.Services.Mapper;
 
 namespace Zest
 {
@@ -17,8 +17,19 @@ namespace Zest
 			// Add services to the container.
 
 			builder.Services.AddControllers();
-			builder.Services.AddSingleton<UserConnectionService>();
-			builder.Services.AddSingleton<SignaRGroupsPlaceholder>();
+			builder.Services.AddScoped<SignaRGroupsPlaceholder>();
+			builder.Services.AddScoped<IAccountService, AccountService>();
+			builder.Services.AddScoped<ICommentsService, CommentsService>();
+			builder.Services.AddScoped<ICommunityFollowerService, CommunityFollowerService>();
+			builder.Services.AddScoped<ICommunityModeratorService, CommunityModeratorService>();
+			builder.Services.AddScoped<ICommunityService, CommunityService>();
+			builder.Services.AddScoped<IFollowerService, FollowerService>();
+			builder.Services.AddScoped<ILikeService, LikeService>();
+			builder.Services.AddScoped<IMessageService, MessageService>();
+			builder.Services.AddScoped<IPostService, PostService>();
+			builder.Services.AddScoped<IPostResourcesService, PostResourcesService>();
+			builder.Services.AddScoped<ISignaRService, SignalRService>();
+			builder.Services.AddScoped<ISignaRGroupsPlaceholder,SignaRGroupsPlaceholder>();
 
 			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 			builder.Services.AddEndpointsApiExplorer();
@@ -33,7 +44,7 @@ namespace Zest
 			{
 				bl.AddProfile(new MappingProfile());
 			});
-			builder.Services.AddDbContext<ZestContext>(b => b.UseLazyLoadingProxies());
+			builder.Services.AddDbContext<ZestContext>();
 
 			builder.Services.AddAuthentication(options =>
 			{
@@ -72,7 +83,7 @@ namespace Zest
 			
 			
 			app.MapHub<LikesHub>("/likeshub");
-			app.MapHub<CommentsHub>("/commentshub");
+			app.MapHub<DeleteHub>("/deletehub");
 			app.MapHub<MessageHub>("/messagehub");
 
 			app.MapControllers();

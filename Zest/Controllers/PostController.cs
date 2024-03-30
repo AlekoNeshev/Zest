@@ -1,13 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.SignalR;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
-using Zest.DBModels;
-using Zest.DBModels.Models;
-using Zest.Services;
+using Zest.Services.Hubs;
+using Zest.Services.Infrastructure.Interfaces;
 using Zest.ViewModels.ViewModels;
 
 namespace Zest.Controllers
@@ -17,96 +15,151 @@ namespace Zest.Controllers
     [ApiController]
     public class PostController : ControllerBase
     {
-        private ZestContext context;
-        private IMapper mapper;
-        private SignaRGroupsPlaceholder connectionService;
-        public PostController(ZestContext context, IMapper mapper, SignaRGroupsPlaceholder likesHubConnectionService)
-        {
-            this.context = context;
-            this.mapper = mapper;
-            this.connectionService = likesHubConnectionService;
-        }
+		private readonly IPostService _postService;
+		private readonly IHubContext<DeleteHub> _hubContext;
+		private readonly ICommunityService _communityService;
+		public PostController(IPostService postService, IHubContext<DeleteHub> hubContext, ICommunityService communityService)
+		{
+			_postService = postService;
+			_communityService = communityService;
+			_hubContext = hubContext;
+		}
 
-        [Route("{id}")]
-        [HttpGet]
-        public async Task<ActionResult<PostViewModel>> Find(int id)
-        {
-           // Console.WriteLine(context.Posts.Find(id).Account.Username);
-            return mapper.Map<PostViewModel>(context.Posts.Find(id));
-        }
+		[Route("{id}")]
+		[HttpGet]
+		public async Task<ActionResult<PostViewModel>> Find(int id)
+		{
+			var user = User.Claims;
+			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var post = await _postService.FindAsync(id, accountId);
+			if (post == null)
+			{
+				return BadRequest("Post does not exist");
+			}
+			return post;
+		}
+
 		[Route("add/{title}/community/{communityId}")]
-        [HttpPost]
-        public async Task<ActionResult> Add(string title,[FromBody] string text, int communityId)
-        {
+		[HttpPost]
+		public async Task<ActionResult> Add(string title, [FromBody] string text, int communityId)
+		{
 			var user = User.Claims;
 			var publisherId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-			var post = context.Add(new  Post 
-            { 
-                Title = title, 
-                Text = text,
-                AccountId = publisherId,
-                CommunityId = communityId,
-                CreatedOn = DateTime.Now,
-            });
-			await context.SaveChangesAsync();
-            var postId = post.Property<int>("Id").CurrentValue;
-			return Ok(postId);
+			var doesCommunityExists = await _communityService.DoesExistAsync(communityId);
+			if (!doesCommunityExists)
+			{
+				return BadRequest("Community does not exists");
+			}
+
+			var post = await _postService.AddAsync(title, text, publisherId, communityId);
+			return Ok(post.Id);
 		}
+
 		[Route("remove/{postId}")]
 		[HttpPut]
 		public async Task<ActionResult> Remove(int postId)
 		{
-			Post post = context.Posts.Find(postId);
-           
-            if (post == null)
-            {
-                return BadRequest();
-            }
-			post.IsDeleted = true;
-			context.Posts.Update(post);
-			context.SaveChanges();
+			var user = User.Claims;
+			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var post = await _postService.FindAsync(postId, accountId);
+
+			if (post == null)
+			{
+				return BadRequest("Post does not exist!");
+			}
+
+			await _postService.RemoveAsync(postId);
+			await _hubContext.Clients.Group("pdd-" +  postId.ToString()).SendAsync("PostDeleted", postId);
 			return Ok();
 		}
-        
-        [Route("getByDate/{lastDate}/{minimumSkipCount}/{takeCount}")]
-        [HttpGet]
-		public async Task<ActionResult<PostViewModel[]>> GetByDate([FromRoute] DateTime lastDate, int minimumSkipCount,int takeCount)
-        {
+
+		[Route("getByDate/{lastDate}/{communityId}/{takeCount}")]
+		[HttpGet]
+		public async Task<ActionResult<PostViewModel[]>> GetByDate([FromRoute] DateTime lastDate, int communityId, int takeCount)
+		{
+			var user = User.Claims;
+			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			if (communityId !=0)
+			{
+				var doesCommunityExists = await _communityService.DoesExistAsync(communityId);
+				if (!doesCommunityExists)
+				{
+					return BadRequest("Community does not exists");
+				}
+			}
+			var posts = await _postService.GetByDateAsync(accountId, lastDate, communityId, takeCount);
+			
+			return posts;
+		}
+
+		[Route("getByCommunity/{communityId}")]
+		[HttpGet]
+		public async Task<ActionResult<PostViewModel[]>> GetByCommunity(int communityId)
+		{
 			var user = User.Claims;
 			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
-			var posts = mapper.Map<PostViewModel[]>( context.Posts.OrderByDescending(p => p.CreatedOn).Skip(minimumSkipCount).Where(x=>x.CreatedOn < lastDate).Take(takeCount).ToArray());
-			foreach (var item in posts)
+			var doesCommunityExists = await _communityService.DoesExistAsync(communityId);
+			if (!doesCommunityExists)
 			{
-				item.IsOwner = context.Posts.Where(x => x.Id == item.Id && x.AccountId == accountId).FirstOrDefault() != null;
+				return BadRequest("Community does not exists");
 			}
-            return posts;
-        }
-        [Route("getByCommunity/{communityId}")]
-        [HttpGet]
-        public async Task<ActionResult<PostViewModel[]>> GetByCommunity(int communityId)
-        {
-			var user = User.Claims;
-			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-			var posts = mapper.Map<PostViewModel[]>(context.Posts.Where(x => x.CommunityId==communityId).OrderByDescending(x => x.CreatedOn).ToArray());
-            foreach (var item in posts)
-            {
-                item.IsOwner = context.Posts.Where(x => x.Id == item.Id && x.AccountId == accountId).FirstOrDefault() != null;
-			}
-            return posts;
-        }
-        [Route("getBySearch/{search}")]
-        [HttpGet]
-        public async Task<ActionResult<PostViewModel[]>> GetBySearch(string search)
-        {
-			var user = User.Claims;
-			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-			var posts = mapper.Map<PostViewModel[]>(context.Posts.OrderByDescending(x => x.Title.Contains(search)).ThenByDescending(x => x.Text.Contains(search)).ThenByDescending(x => x.CreatedOn).ToArray());
-			foreach (var item in posts)
-			{
-				item.IsOwner = context.Posts.Where(x => x.Id == item.Id && x.AccountId == accountId).FirstOrDefault() != null;
-			}
-            return posts;
+			var posts = await _postService.GetByCommunityAsync(communityId);
+			
+			return posts;
 		}
-    }
+
+		[Route("getBySearch/{search}/{takeCount}/{communityId}")]
+		[HttpPost]
+		public async Task<ActionResult<PostViewModel[]>> GetBySearch(string search, int takeCount, int communityId, [FromBody] int[]? skipIds)
+		{
+			var user = User.Claims;
+			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			if (string.IsNullOrWhiteSpace(search))
+			{
+				return BadRequest("Search is empty!");
+
+			}
+			if (communityId !=0)
+			{
+				var doesCommunityExists = await _communityService.DoesExistAsync(communityId);
+				if (!doesCommunityExists)
+				{
+					return BadRequest("Community does not exists");
+				}
+			}
+			
+			var posts = await _postService.GetBySearchAsync(search, accountId, takeCount, communityId, skipIds);
+			
+			return posts;
+		}
+		[Route("getByTrending/{takeCount}/{communityId}")]
+		[HttpPost]
+		public async Task<ActionResult<PostViewModel[]>> GetByTrending(int takeCount, int communityId,[FromBody] int[]? skipIds)
+		{
+			var user = User.Claims;
+			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			if (communityId !=0)
+			{
+				var doesCommunityExists = await _communityService.DoesExistAsync(communityId);
+				if (!doesCommunityExists)
+				{
+					return BadRequest("Community does not exists");
+				}
+			}
+			var posts = await _postService.GetTrendingAsync(skipIds, takeCount, accountId, communityId);
+			
+			return posts.ToArray();
+		}
+		[Route("getByFollowed/{takeCount}")]
+		[HttpPost]
+		public async Task<ActionResult<PostViewModel[]>> GetByFollowed(int takeCount, [FromBody] int[]? skipIds)
+		{
+			var user = User.Claims;
+			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var posts = await _postService.GetFollowedPostsAsync(skipIds, takeCount, accountId);
+			
+			return posts.ToArray();
+		}
+	}
 }

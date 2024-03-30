@@ -1,13 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Identity.Client;
 using System.Security.Claims;
-using Zest.DBModels;
-using Zest.DBModels.Models;
+using Zest.Services.Infrastructure.Interfaces;
+using Zest.Services.Infrastructure.Services;
 using Zest.ViewModels.ViewModels;
-
 namespace Zest.Controllers
 {
 	[Authorize]
@@ -15,61 +12,60 @@ namespace Zest.Controllers
     [ApiController]
     public class AccountController : ControllerBase
     {
-        private ZestContext zestContext;
-        private IMapper mapper;
-        public AccountController(ZestContext zestContext, IMapper mapper)
+        private IAccountService _accountService;
+        
+        public AccountController(IAccountService accountService)
         {
-            this.zestContext = zestContext;
-            this.mapper = mapper;
+            this._accountService = accountService;      
         }
  
         [Route("get")]
         [HttpGet]
         public async Task<ActionResult<AccountViewModel>> FindById()
         {
-            var id = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var accountId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var account = await _accountService.FindByIdAsync(accountId);
 
-			return mapper.Map<AccountViewModel>(zestContext.Accounts.Where(x => x.Id ==id).FirstOrDefault());
+            return Ok(account);
         }
-        /* [Route("email/{email}/password/{password}")]
-         [HttpGet]
-         public async Task<ActionResult<AccountViewModel>> FindByEmail(string email, string password)
-         {
-             return mapper.Map<AccountViewModel>(zestContext.Accounts.Where(x=>x.Email ==email && x.Password==password).FirstOrDefault());
-         }*/
+       
         [Route("add/{name}/{email}")]
         [HttpPost]
-        public async Task<ActionResult> Add(string name, string email)
+        public async Task<ActionResult<AccountViewModel>> Add(string name, string email)
         {
-            var user = User.Claims;
-            var p = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-           
-			var newAccount = zestContext.Add(new Account
-            {          
-                Id = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value,
-			    Username = name,
-			    Email = email,
-                CreatedOn = DateTime.Now,
-			    IsAdmin = false
-
-            }) ;
-            zestContext.SaveChanges();
-			var accountId = newAccount.Property<string>("Id").CurrentValue;
-            var username = newAccount.Property<string>("Username").CurrentValue;
-			return Ok(new string []{ accountId, username});
+            var accountId = User.Id();
+			var doesUsernameExist = _accountService.FindByUsernameAsync(name);
+            if(doesUsernameExist == null)
+            {
+                return BadRequest("Username already exists!");
+            }
+            var account = _accountService.AddAsync(accountId, name, email);
+   
+            return Ok(account);
         }
-		[Route("getAll")]
+		[Route("getAll/{takeCount}/{skipCount}")]
 		[HttpGet]
-		public async Task<ActionResult<UserViewModel[]>> GetAll()
+		public async Task<ActionResult<UserViewModel[]>> GetAll(int takeCount, int skipCount = 0)
 		{
-			var user = User.Claims;
-			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-			UserViewModel[] userViewModels = mapper.Map<UserViewModel[]>(zestContext.Accounts.ToArray());
-			foreach (var item in userViewModels)
-			{
-				item.IsFollowed = zestContext.Followers.Where(x => x.FollowerId == accountId && x.FollowedId == item.Id).FirstOrDefault() != null;
-			}
-            return userViewModels;
+
+            var accountId = User.Id();
+			var accounts = await _accountService.GetAllAsync(accountId, takeCount, skipCount);
+           			
+			return Ok(accounts);
+		}
+		[Route("getBySearch/{search}/{takeCount}")]
+		[HttpPost]
+		public async Task<ActionResult<UserViewModel[]>> GetBySearch(string search, int takeCount, [FromBody] string[]? skipIds)
+		{
+            if (string.IsNullOrWhiteSpace(search))
+            {
+                return BadRequest("Search is empty!");
+
+            }
+			var accountId = User.Id();
+			var accounts = await _accountService.GetBySearchAsync(search, accountId, takeCount, skipIds);
+
+			return accounts;
 		}
 	}
 }

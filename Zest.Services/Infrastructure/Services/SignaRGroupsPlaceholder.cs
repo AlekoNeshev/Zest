@@ -1,18 +1,10 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using System.Text.RegularExpressions;
-using Zest.Hubs;
+﻿using Zest.Services.Infrastructure.Interfaces;
 
-namespace Zest.Services
+namespace Zest.Services.Infrastructure.Services
 {
-	public class SignaRGroupsPlaceholder
+	public class SignaRGroupsPlaceholder : ISignaRGroupsPlaceholder
 	{
 		private readonly IDictionary<string, HashSet<string>> _userGroups = new Dictionary<string, HashSet<string>>();
-		
-
-		public SignaRGroupsPlaceholder()
-		{
-			
-		}
 
 		public async Task AddUserToGroup(string connectionId, string groupName)
 		{
@@ -23,9 +15,9 @@ namespace Zest.Services
 					_userGroups[connectionId] = new HashSet<string>();
 				}
 				_userGroups[connectionId].Add(groupName);
-			   
+
 			}
-			
+
 		}
 
 		public void RemoveUserFromGroup(string connectionId, string groupName)
@@ -49,7 +41,7 @@ namespace Zest.Services
 				if (_userGroups.ContainsKey(connectionId))
 				{
 					_userGroups[connectionId].Clear();
-					
+
 				}
 			}
 		}

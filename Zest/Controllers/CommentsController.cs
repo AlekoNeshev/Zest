@@ -8,7 +8,9 @@ using Microsoft.Identity.Client;
 using System.Security.Claims;
 using Zest.DBModels;
 using Zest.DBModels.Models;
-using Zest.Hubs;
+using Zest.Services.Hubs;
+using Zest.Services.Infrastructure.Interfaces;
+using Zest.Services.Infrastructure.Services;
 using Zest.ViewModels.ViewModels;
 
 namespace Zest.Controllers
@@ -18,81 +20,110 @@ namespace Zest.Controllers
     [ApiController]
     public class CommentsController : ControllerBase
     {
-        private ZestContext context;
-        private IHubContext<CommentsHub> hubContext;
-        private IMapper mapper;
-        public CommentsController(ZestContext context, IMapper mapper, IHubContext<CommentsHub> hubContext)
-        {
-            this.context = context;
-            this.mapper = mapper;
-            this.hubContext = hubContext;
-        }
+		private readonly ICommentsService _commentsService;
+		private readonly IPostService _postService;
+		private readonly IHubContext<DeleteHub> _deleteHubContext;
+
+
+		public CommentsController(ICommentsService commentsService, IHubContext<DeleteHub> hubContext, IPostService postService)
+		{
+			_commentsService = commentsService;
+			_deleteHubContext = hubContext;
+			_postService=postService;
+		}
 
 		[HttpGet]
-        [Route("{id}")]
-        public async Task<ActionResult<CommentViewModel>> Find(int id)
-        {
-            Comment comment = await context.Comments.FindAsync(id);
-            CommentViewModel vm= mapper.Map<CommentViewModel>(comment);
-            return mapper.Map<CommentViewModel>(context.Comments.Find(id));
-        }
+		[Route("{id}")]
+		public async Task<ActionResult<CommentViewModel>> Find(int id)
+		{
+			var user = User.Claims;
+			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var comment = await _commentsService.FindAsync(id, accountId);
+			return comment;
+		}
 
-        [Route("add/post/{postId}/comment/{commentId}")]
-        [HttpPost]
-        public async Task<ActionResult> Add(int postId, [FromBody] string text, int commentId = 0)
-        {
+		[Route("add/post/{postId}/comment/{commentId}")]
+		[HttpPost]
+		public async Task<IActionResult> Add(int postId, [FromBody] string text, int commentId = 0)
+		{
 			var user = User.Claims;
 			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
-			if (postId!=0 && commentId == 0)
-            {
-				var comment = await context.AddAsync(new Comment { AccountId = accountId, PostId = postId, Text = text, CreatedOn = DateTime.Now });
-				context.SaveChanges();
-				var returnId = comment.Property<int>("Id").CurrentValue;
-                return Ok(returnId);
+			var doesPostExist = await _postService.DoesExist(postId);
+			if (!doesPostExist)
+			{
+				return BadRequest("Post does not exist!");
+			}
+			if(commentId != 0)
+			{
+				var doesCommentExist = await _commentsService.DoesExist(commentId);
+				if (!doesCommentExist)
+				{
+					return BadRequest("Comment does not exist");
+				}
 			}
 
-            else if (postId!=0 && commentId != 0)
-            {
-				var comment = await context.AddAsync(new Comment { AccountId = accountId, PostId = postId, CommentId = commentId, Text = text, CreatedOn = DateTime.Now });
-				context.SaveChanges();
-				var returnId =new int[] { comment.Property<int>("Id").CurrentValue, (int)comment.Property<int?>("CommentId").CurrentValue };
-                return Ok(returnId);
+			var newComment = await _commentsService.AddAsync(accountId, postId, text, commentId);
+			
+			if(commentId == 0)
+			{
+				var returnId = newComment.Property<int>("Id").CurrentValue;
+				return Ok(returnId);
 			}
-            
-            //await hubContext.Clients.Group("message-" + postId.ToString()).SendAsync("CommentPosted");
-            return BadRequest();
-        }
-	
-		[Route("remove/{commentId}")]
-        [HttpPut]
-        public async Task<ActionResult> Remove(int commentId)
-        {
-            Comment comment = new Comment();
+			else
+			{
+				var returnIds = new int[] { newComment.Property<int>("Id").CurrentValue, (int)newComment.Property<int?>("CommentId").CurrentValue };
+				return Ok(returnIds);
+			}
+			
+			
+			
+		}
 
-            comment = context.Comments.FirstOrDefault(c => c.Id == commentId);
-            if (comment == null)
-            {
-                return BadRequest();
-            }
-            comment.IsDeleted = true;
-            context.Update(comment);
-            await context.SaveChangesAsync();
-           // await hubContext.Clients.All.SendAsync("CommentPosted");
-            return Ok(commentId);
-        }
+		[Route("remove/{commentId}/{postId}")]
+		[HttpPut]
+		public async Task<IActionResult> Remove(int commentId, int postId)
+		{
+			var doesCommentExist = await _commentsService.DoesExist(commentId);
+			if(!doesCommentExist)
+			{
+				return BadRequest("Comment does not exist");
+			}
+			await _commentsService.RemoveAsync(commentId);
+			await _deleteHubContext.Clients.Group(("pdd-" + postId.ToString())).SendAsync("CommentDeleted", commentId);
+			return Ok(commentId);
+		}
 
-        [Route("getCommentsByPost/{postId}")]
-        [HttpGet]
-        public async Task<ActionResult<CommentViewModel[]>> GetCommentsByPost( int postId)
-        {
-            var c = context.Comments.Include(x => x.Replies).ThenInclude(x => x.Replies).Where(x => x.PostId == postId && x.CommentId == null).ToArray();
-            var b = context.Comments.Where(x => x.Likes.Count==0).ToArray();
-            var m = mapper.Map<CommentViewModel[]>(b);
-			var comments = mapper.Map<CommentViewModel[]>(c);
-          
+		[Route("getCommentsByPost/{postId}/{lastDate}/{takeCount}")]
+		[HttpGet]
+		public async Task<ActionResult<CommentViewModel[]>> GetCommentsByPost(int postId, [FromRoute] DateTime lastDate, int takeCount)
+		{
+			var doesPostExist = await _postService.DoesExist(postId);
+			if (!doesPostExist)
+			{
+				return BadRequest("Post does not exist!");
+			}
+			var user = User.Claims;
+			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var comments = await _commentsService.GetCommentsByPostIdAsync(postId, lastDate, takeCount, accountId);
 			
 			return comments;
-        }
-    }
+		}
+		[Route("getByTrending/{takeCount}/{postId}")]
+		[HttpPost]
+		public async Task<ActionResult<CommentViewModel[]>> GetByTrending(int takeCount, int postId, [FromBody] int[]? skipIds)
+		{
+			var doesPostExist = await _postService.DoesExist(postId);
+			if (!doesPostExist)
+			{
+				return BadRequest("Post does not exist!");
+			}
+			var user = User.Claims;
+			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var posts = await _commentsService.GetTrendingCommentsAsync(skipIds, takeCount, accountId, postId);
+
+			return posts.ToArray();
+		}
+	}
+
 }

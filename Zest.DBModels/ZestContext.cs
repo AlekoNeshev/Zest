@@ -95,8 +95,9 @@ public partial class ZestContext : DbContext
 
             entity.HasOne(d => d.Creator).WithMany(p => p.Communities)
                 .HasForeignKey(d => d.CreatorId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_Communities_Accounts");
+            
         });
 
         modelBuilder.Entity<CommunityFollower>(entity =>
@@ -107,7 +108,7 @@ public partial class ZestContext : DbContext
 
             entity.HasOne(d => d.Account).WithMany()
                 .HasForeignKey(d => d.AccountId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_CommunityFollowers_Accounts");
 
             entity.HasOne(d => d.Community).WithMany()
