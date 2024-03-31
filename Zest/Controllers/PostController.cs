@@ -1,8 +1,6 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using Zest.Services.Hubs;
 using Zest.Services.Infrastructure.Interfaces;
@@ -100,7 +98,7 @@ namespace Zest.Controllers
 			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
 			var doesCommunityExists = await _communityService.DoesExistAsync(communityId);
-			if (!doesCommunityExists)
+			if (doesCommunityExists == false)
 			{
 				return BadRequest("Community does not exists");
 			}

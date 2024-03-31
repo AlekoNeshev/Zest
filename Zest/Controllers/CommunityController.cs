@@ -1,13 +1,7 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using System.Security.Claims;
-using Zest.DBModels;
-using Zest.DBModels.Models;
 using Zest.Services.Infrastructure.Interfaces;
-using Zest.Services.Infrastructure.Services;
 using Zest.ViewModels.ViewModels;
 
 namespace Zest.Controllers
@@ -52,12 +46,12 @@ namespace Zest.Controllers
 
 		[Route("add/{name}")]
 		[HttpPost]
-		public async Task<IActionResult> Add(string name, [FromBody] string discription)
+		public async Task<ActionResult<int>> Add(string name, [FromBody] string discription)
 		{
 			var creatorId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			
 			var communityId = await _communityService.AddCommunityAsync(creatorId, name, discription);
-			return Ok(communityId);
+			return communityId;
 		}
 		[Route("delete/{communityId}")]
 		[HttpDelete]

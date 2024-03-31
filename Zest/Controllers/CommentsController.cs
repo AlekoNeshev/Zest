@@ -1,16 +1,9 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
 using System.Security.Claims;
-using Zest.DBModels;
-using Zest.DBModels.Models;
 using Zest.Services.Hubs;
 using Zest.Services.Infrastructure.Interfaces;
-using Zest.Services.Infrastructure.Services;
 using Zest.ViewModels.ViewModels;
 
 namespace Zest.Controllers
@@ -67,12 +60,12 @@ namespace Zest.Controllers
 			
 			if(commentId == 0)
 			{
-				var returnId = newComment.Property<int>("Id").CurrentValue;
+				var returnId = newComment.Id;
 				return Ok(returnId);
 			}
 			else
 			{
-				var returnIds = new int[] { newComment.Property<int>("Id").CurrentValue, (int)newComment.Property<int?>("CommentId").CurrentValue };
+				var returnIds = new int[] { newComment.Id, (int)newComment.CommentId };
 				return Ok(returnIds);
 			}
 			

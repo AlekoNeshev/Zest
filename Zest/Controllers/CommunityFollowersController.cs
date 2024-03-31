@@ -1,10 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Runtime.CompilerServices;
 using System.Security.Claims;
-using Zest.DBModels;
-using Zest.DBModels.Models;
 using Zest.Services.Infrastructure.Interfaces;
 
 namespace Zest.Controllers
@@ -49,7 +45,7 @@ namespace Zest.Controllers
 		{
 			var accountId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			bool doesFolloweshipExist = await _communityFollowerService.DoesExistAsync(accountId, communityId);
-			if (doesFolloweshipExist)
+			if (!doesFolloweshipExist)
 			{
 				return BadRequest("Followship does not exist");
 			}

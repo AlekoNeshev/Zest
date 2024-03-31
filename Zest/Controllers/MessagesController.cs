@@ -1,10 +1,7 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Identity.Client;
 using System.Security.Claims;
-using Zest.DBModels.Models;
 using Zest.Services.Hubs;
 using Zest.Services.Infrastructure.Interfaces;
 using Zest.ViewModels.ViewModels;
@@ -77,7 +74,7 @@ namespace Zest.Controllers
 				secondHubId = senderId;
 			}
 
-			await _hubContext.Clients.Groups($"chat-{firstHubId}{secondHubId}").SendAsync("MessageSent", message.Id);
+			await _hubContext.Clients.Group($"chat-{firstHubId}{secondHubId}").SendAsync("MessageSent", message.Id);
 
 			return Ok(message.Id);
 		}
