@@ -20,11 +20,6 @@ namespace Zest.Services.Infrastructure.Services
 			_mapper = mapper;
 		}
 
-		public async Task<PostRescourcesViewModel> GetPostResourceByIdAsync(int id)
-		{
-			var postResource = await _context.PostResources.FindAsync(id);
-			return _mapper.Map<PostRescourcesViewModel>(postResource);
-		}
 
 		public async Task<PostResources> AddPostResourceAsync(PostResources postResource)
 		{
@@ -99,10 +94,7 @@ namespace Zest.Services.Infrastructure.Services
 			var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
 			var uploads = Path.Combine(baseDirectory, "uploads");
 			var filePath = Path.Combine(uploads, fileName);
-			if (!System.IO.File.Exists(filePath))
-			{
-				return null;
-			}
+			
 			var mimeType = MimeTypesMap.GetMimeType(fileName);
 			var fileStream = System.IO.File.OpenRead(filePath);
 
@@ -122,7 +114,7 @@ namespace Zest.Services.Infrastructure.Services
 				{
 					Id = x.Id,
 					Type = x.Type,
-					Source = "https://926zh759-5132.euw.devtunnels.ms/api/PostRescources/ivan/"+x.Name
+					Source = "https://926zh759-5132.euw.devtunnels.ms/api/PostResources/get/"+x.Name
 				});
 			}
 			return fileResults.ToArray();

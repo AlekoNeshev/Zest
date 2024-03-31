@@ -1,19 +1,13 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
-using System.Text.RegularExpressions;
-using Zest.Services.Hubs;
+﻿using Microsoft.AspNetCore.Mvc;
 using Zest.Services.Infrastructure.Interfaces;
 
 namespace Zest.Controllers
 {
-	[Route("api/[controller]")]
+	[Route("Zest/[controller]")]
 	[ApiController]
 	
 	public class SignalRGroupsController : ControllerBase
 	{
-       
 		private readonly ISignaRService _signalRService;
 		public SignalRGroupsController(ISignaRService signalRService)
 

@@ -1,15 +1,11 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-using Zest.DBModels;
-using Zest.DBModels.Models;
 using Zest.Services.Infrastructure.Interfaces;
 using Zest.ViewModels.ViewModels;
 
 namespace Zest.Controllers
 {
-    [Route("api/[controller]")]
+	[Route("Zest/[controller]")]
     [ApiController]
     public class CommunityModeratorsController : Controller
     {

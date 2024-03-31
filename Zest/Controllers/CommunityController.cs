@@ -1,19 +1,13 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using System.Security.Claims;
-using Zest.DBModels;
-using Zest.DBModels.Models;
 using Zest.Services.Infrastructure.Interfaces;
-using Zest.Services.Infrastructure.Services;
 using Zest.ViewModels.ViewModels;
 
 namespace Zest.Controllers
 {
 	[Authorize]
-	[Route("api/[controller]")]
+	[Route("Zest/[controller]")]
     [ApiController]
     public class CommunityController : ControllerBase
     {
@@ -32,7 +26,7 @@ namespace Zest.Controllers
 		[HttpGet]
 		public async Task<ActionResult<CommunityViewModel>> Find(int id)
 		{
-			var accountId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			var accountId = User.Id();
 			var community = await _communityService.GetCommunityByIdAsync(id, accountId);
 			return community;
 		}
@@ -41,7 +35,7 @@ namespace Zest.Controllers
 		[HttpGet]
 		public async Task<ActionResult<CommunityViewModel[]>> GetAll(int takeCount, int skipCount = 0)
 		{
-			var accountId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			var accountId = User.Id();
 			var communities = await _communityService.GetAllCommunitiesAsync(accountId, skipCount, takeCount);
 			foreach (var item in communities)
 			{
@@ -52,12 +46,12 @@ namespace Zest.Controllers
 
 		[Route("add/{name}")]
 		[HttpPost]
-		public async Task<IActionResult> Add(string name, [FromBody] string discription)
+		public async Task<ActionResult<int>> Add(string name, [FromBody] string discription)
 		{
-			var creatorId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			var creatorId = User.Id();
 			
 			var communityId = await _communityService.AddCommunityAsync(creatorId, name, discription);
-			return Ok(communityId);
+			return communityId;
 		}
 		[Route("delete/{communityId}")]
 		[HttpDelete]
@@ -68,7 +62,7 @@ namespace Zest.Controllers
 			{
 				return BadRequest("Community does not exists");
 			}
-			var creatorId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			var creatorId = User.Id();
 
 			 await _communityService.DeleteCommunityAsync(communityId);
 			return Ok();
@@ -89,7 +83,7 @@ namespace Zest.Controllers
 		[HttpPost]
 		public async Task<ActionResult<CommunityViewModel[]>> GetCommunitiesByPopularity(int takeCount,[FromBody] int[]? skipIds)
 		{
-			var accountId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			var accountId = User.Id();
 			var communities = await _communityService.GetTrendingCommunitiesAsync(skipIds, takeCount, accountId);
 			return communities;
 		}
@@ -97,8 +91,7 @@ namespace Zest.Controllers
 		[HttpPost]
 		public async Task<ActionResult<CommunityViewModel[]>> GetBySearch(string search, int takeCount, [FromBody] int[]? skipIds)
 		{
-			var user = User.Claims;
-			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var accountId = User.Id();
 			if (string.IsNullOrWhiteSpace(search))
 			{
 				return BadRequest("Search is empty!");

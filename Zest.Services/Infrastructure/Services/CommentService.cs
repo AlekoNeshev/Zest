@@ -1,14 +1,10 @@
 ﻿using AutoMapper;
-using Castle.Components.DictionaryAdapter.Xml;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.Identity.Client;
 using Zest.DBModels;
 using Zest.DBModels.Models;
 using Zest.Services.Infrastructure.Interfaces;
 using Zest.ViewModels.ViewModels;
-using Microsoft.Extensions.DependencyInjection;
-using System.Security.Claims;
 namespace Zest.Services.Infrastructure.Services
 {
 	public class CommentsService : ICommentsService
@@ -54,7 +50,7 @@ namespace Zest.Services.Infrastructure.Services
 			return comment;
 		}
 
-		public async Task<EntityEntry<Comment>> AddAsync(string accountId, int postId, string text, int commentId = 0)
+		public async Task<Comment> AddAsync(string accountId, int postId, string text, int commentId = 0)
 		{
 			EntityEntry<Comment> comment;
 
@@ -68,7 +64,7 @@ namespace Zest.Services.Infrastructure.Services
 			}
 
 			await _context.SaveChangesAsync();
-			return comment;
+			return comment.Entity;
 		}
 
 		public async Task RemoveAsync(int id)

@@ -8,15 +8,15 @@ using Zest.Services.Infrastructure.Interfaces;
 namespace Zest.Controllers
 {
 	[Authorize]
-	[Route("api/[controller]")]
+	[Route("Zest/[controller]")]
 	[ApiController]
-	public class LikesController : ControllerBase
+	public class LikeController : ControllerBase
 	{
 		private readonly ILikeService _likeService;
 		private readonly IHubContext<LikesHub> _likesHubContext;
 		private readonly IPostService _postService;
 		private readonly ICommentsService _commentsService;
-		public LikesController(ILikeService likeService, IHubContext<LikesHub> likesHubContext, IPostService postService, ICommentsService commentsService)
+		public LikeController(ILikeService likeService, IHubContext<LikesHub> likesHubContext, IPostService postService, ICommentsService commentsService)
 		{
 			_likeService = likeService;
 			_likesHubContext = likesHubContext;
@@ -28,8 +28,7 @@ namespace Zest.Controllers
 		[HttpPost]
 		public async Task<IActionResult> Add(int postId, int commentId, bool value)
 		{
-			var user = User.Claims;
-			var likerId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var likerId = User.Id();
 
 			var doesPostExist = await _postService.DoesExist(postId);
 			if (!doesPostExist)
@@ -68,8 +67,7 @@ namespace Zest.Controllers
 		[HttpDelete]
 		public async Task<ActionResult> Remove(int likeId, int postId, int commentId)
 		{
-			var user = User.Claims;
-			var likerId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var likerId = User.Id();
 			var doesPostExist = await _postService.DoesExist(postId);
 			if (!doesPostExist)
 			{

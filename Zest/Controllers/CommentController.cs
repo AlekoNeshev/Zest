@@ -1,31 +1,24 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
 using System.Security.Claims;
-using Zest.DBModels;
-using Zest.DBModels.Models;
 using Zest.Services.Hubs;
 using Zest.Services.Infrastructure.Interfaces;
-using Zest.Services.Infrastructure.Services;
 using Zest.ViewModels.ViewModels;
 
 namespace Zest.Controllers
 {
 	[Authorize]
-	[Route("api/[controller]")]
+	[Route("Zest/[controller]")]
     [ApiController]
-    public class CommentsController : ControllerBase
+    public class CommentController : ControllerBase
     {
 		private readonly ICommentsService _commentsService;
 		private readonly IPostService _postService;
 		private readonly IHubContext<DeleteHub> _deleteHubContext;
 
 
-		public CommentsController(ICommentsService commentsService, IHubContext<DeleteHub> hubContext, IPostService postService)
+		public CommentController(ICommentsService commentsService, IHubContext<DeleteHub> hubContext, IPostService postService)
 		{
 			_commentsService = commentsService;
 			_deleteHubContext = hubContext;
@@ -36,8 +29,7 @@ namespace Zest.Controllers
 		[Route("{id}")]
 		public async Task<ActionResult<CommentViewModel>> Find(int id)
 		{
-			var user = User.Claims;
-			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var accountId = User.Id();
 			var comment = await _commentsService.FindAsync(id, accountId);
 			return comment;
 		}
@@ -46,8 +38,7 @@ namespace Zest.Controllers
 		[HttpPost]
 		public async Task<IActionResult> Add(int postId, [FromBody] string text, int commentId = 0)
 		{
-			var user = User.Claims;
-			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var accountId = User.Id();
 
 			var doesPostExist = await _postService.DoesExist(postId);
 			if (!doesPostExist)
@@ -67,12 +58,12 @@ namespace Zest.Controllers
 			
 			if(commentId == 0)
 			{
-				var returnId = newComment.Property<int>("Id").CurrentValue;
+				var returnId = newComment.Id;
 				return Ok(returnId);
 			}
 			else
 			{
-				var returnIds = new int[] { newComment.Property<int>("Id").CurrentValue, (int)newComment.Property<int?>("CommentId").CurrentValue };
+				var returnIds = new int[] { newComment.Id, (int)newComment.CommentId };
 				return Ok(returnIds);
 			}
 			

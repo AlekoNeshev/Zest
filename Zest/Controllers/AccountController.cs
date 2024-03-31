@@ -8,7 +8,7 @@ using Zest.ViewModels.ViewModels;
 namespace Zest.Controllers
 {
 	[Authorize]
-	[Route("api/[controller]")]
+	[Route("Zest/[controller]")]
     [ApiController]
     public class AccountController : ControllerBase
     {
@@ -23,10 +23,10 @@ namespace Zest.Controllers
         [HttpGet]
         public async Task<ActionResult<AccountViewModel>> FindById()
         {
-            var accountId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            var account = await _accountService.FindByIdAsync(accountId);
+            var accountId = User.Id();
+			var account = await _accountService.FindByIdAsync(accountId);
 
-            return Ok(account);
+            return account;
         }
        
         [Route("add/{name}/{email}")]
@@ -39,9 +39,9 @@ namespace Zest.Controllers
             {
                 return BadRequest("Username already exists!");
             }
-            var account = _accountService.AddAsync(accountId, name, email);
+            var account = await _accountService.AddAsync(accountId, name, email);
    
-            return Ok(account);
+            return account;
         }
 		[Route("getAll/{takeCount}/{skipCount}")]
 		[HttpGet]
@@ -51,7 +51,7 @@ namespace Zest.Controllers
             var accountId = User.Id();
 			var accounts = await _accountService.GetAllAsync(accountId, takeCount, skipCount);
            			
-			return Ok(accounts);
+			return accounts;
 		}
 		[Route("getBySearch/{search}/{takeCount}")]
 		[HttpPost]
