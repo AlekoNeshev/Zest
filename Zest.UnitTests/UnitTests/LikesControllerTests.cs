@@ -21,7 +21,7 @@ namespace Zest.UnitTests.UnitTests
 		private Mock<IHubContext<LikesHub>> _mockHubContext;
 		private Mock<IPostService> _mockPostService;
 		private Mock<ICommentsService> _mockCommentsService;
-		private LikesController _controller;
+		private LikeController _controller;
 
 		[SetUp]
 		public void Setup()
@@ -30,7 +30,7 @@ namespace Zest.UnitTests.UnitTests
 			_mockHubContext = new Mock<IHubContext<LikesHub>>();
 			_mockPostService = new Mock<IPostService>();
 			_mockCommentsService = new Mock<ICommentsService>();
-			_controller = new LikesController(_mockLikeService.Object, _mockHubContext.Object, _mockPostService.Object, _mockCommentsService.Object);
+			_controller = new LikeController(_mockLikeService.Object, _mockHubContext.Object, _mockPostService.Object, _mockCommentsService.Object);
 		}
 
 		[Test]

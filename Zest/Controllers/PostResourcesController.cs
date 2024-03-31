@@ -5,15 +5,15 @@ using Zest.ViewModels.ViewModels;
 
 namespace Zest.Controllers
 {
-	[Route("api/[controller]")]
+	[Route("Zest/[controller]")]
 	[ApiController]
 	
-	public class PostRescourcesController : Controller
+	public class PostResourcesController : Controller
 	{
 		
 		private readonly IPostResourcesService _postResourceService;
 		private readonly IPostService _postService;
-        public PostRescourcesController(IPostResourcesService postResourcesService, IPostService postService)
+        public PostResourcesController(IPostResourcesService postResourcesService, IPostService postService)
         {
            
 			this._postResourceService = postResourcesService;
@@ -35,14 +35,11 @@ namespace Zest.Controllers
 			return Ok();
 		}
 
-		[HttpGet("ivan/{fileName}")]
-		public async Task<ActionResult<FileResult>> GetFile(string fileName)
+		[HttpGet("get/{fileName}")]
+		public async Task<FileResult> GetFile(string fileName)
 		{
 			CustomFileStreamResult customFileStreamResult = await _postResourceService.GetFileAsync(fileName);
-			if(customFileStreamResult == null)
-			{
-				return BadRequest("no such file found");
-			}
+			
 			return File(customFileStreamResult.Stream, customFileStreamResult.ContentType);
 		}
 

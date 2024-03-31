@@ -15,7 +15,7 @@ using Zest.ViewModels.ViewModels;
 [TestFixture]
 public class CommentsTests
 {
-	private CommentsController _controller;
+	private CommentController _controller;
 	private Mock<ICommentsService> _commentsServiceMock;
 	private Mock<IPostService> _postServiceMock;
 	private Mock<IHubContext<DeleteHub>> _deleteHubContextMock;
@@ -27,7 +27,7 @@ public class CommentsTests
 		_postServiceMock = new Mock<IPostService>();
 		_deleteHubContextMock = new Mock<IHubContext<DeleteHub>>();
 
-		_controller = new CommentsController(
+		_controller = new CommentController(
 			_commentsServiceMock.Object,
 			_deleteHubContextMock.Object,
 			_postServiceMock.Object);

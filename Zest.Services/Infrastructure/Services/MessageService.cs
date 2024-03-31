@@ -57,9 +57,6 @@ namespace Zest.Services.Infrastructure.Services
 			await _context.SaveChangesAsync();
 		}
 
-		public async Task<MessageViewModel> FindBySenderIdAndReceiverIdAsync(string senderId, string receiverId)
-		{
-			return _mapper.Map<MessageViewModel>( await _context.Messages.Include(x => x.Sender).Include(x => x.Receiver).FirstOrDefaultAsync(m => m.SenderId == senderId && m.ReceiverId == receiverId));
-		}
+		
 	}
 }

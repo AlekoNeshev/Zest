@@ -9,14 +9,14 @@ using Zest.ViewModels.ViewModels;
 namespace Zest.Controllers
 {
 	[Authorize]
-	[Route("api/[controller]")]
+	[Route("Zest/[controller]")]
     [ApiController]
-    public class MessagesController : ControllerBase
+    public class MessageController : ControllerBase
     {
 		private readonly IMessageService _messageService;
 		private readonly IHubContext<MessageHub> _hubContext;
 		private readonly IAccountService _accountService;
-		public MessagesController(IMessageService messageService, IHubContext<MessageHub> hubContext, IAccountService accountService)
+		public MessageController(IMessageService messageService, IHubContext<MessageHub> hubContext, IAccountService accountService)
 		{
 			_messageService = messageService;
 			_hubContext = hubContext;
@@ -35,8 +35,7 @@ namespace Zest.Controllers
 		[HttpGet]
 		public async Task<ActionResult<MessageViewModel[]>> GetMessagesByReceiverId(string receiverId, int takeCount, [FromRoute]DateTime date)
 		{
-			var user = User.Claims;
-			var senderId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var senderId = User.Id();
 			var doesAccountExists = await _accountService.DoesExistAsync(receiverId);
 			if (!doesAccountExists)
 			{
@@ -50,8 +49,7 @@ namespace Zest.Controllers
 		[HttpPost]
 		public async Task<ActionResult> Add(string receiverId, [FromBody] string text)
 		{
-			var user = User.Claims;
-			var senderId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var senderId = User.Id();
 			var doesAccountExists = await _accountService.DoesExistAsync(receiverId);
 			if (!doesAccountExists)
 			{

@@ -7,7 +7,7 @@ using Zest.ViewModels.ViewModels;
 namespace Zest.Controllers
 {
 	[Authorize]
-	[Route("api/[controller]")]
+	[Route("Zest/[controller]")]
     [ApiController]
     public class FollowersController : ControllerBase
     {
@@ -31,8 +31,7 @@ namespace Zest.Controllers
 		[HttpPost]
 		public async Task<IActionResult> Add(string followedId)
 		{
-			var user = User.Claims;
-			var followerId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var followerId = User.Id();
 			var doesAccountExists = await _accountService.DoesExistAsync(followedId);
 			if (!doesAccountExists)
 			{
@@ -46,8 +45,7 @@ namespace Zest.Controllers
 		[HttpDelete]
 		public async Task<IActionResult> Delete(string followedId)
 		{
-			var user = User.Claims;
-			var followerId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var followerId = User.Id();
 			var doesAccountExists = await _accountService.DoesExistAsync(followedId);
 			if (!doesAccountExists)
 			{
@@ -61,8 +59,7 @@ namespace Zest.Controllers
 		[HttpGet]
 		public async Task<ActionResult<BaseAccountViewModel[]>> FindFriends(int takeCount, int skipCount = 0)
 		{
-			var user = User.Claims;
-			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var accountId = User.Id();
 			var followers = await _followerService.FindFriendsAsync(accountId, takeCount, skipCount);
 			return followers;
 		}
@@ -75,8 +72,7 @@ namespace Zest.Controllers
 				return BadRequest("Search is empty!");
 
 			}
-			var user = User.Claims;
-			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var accountId = User.Id();
 			var followers = await _followerService.GetBySearchAsync(search, accountId, takeCount, skipIds);
 
 			return followers;

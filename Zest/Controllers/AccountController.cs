@@ -8,7 +8,7 @@ using Zest.ViewModels.ViewModels;
 namespace Zest.Controllers
 {
 	[Authorize]
-	[Route("api/[controller]")]
+	[Route("Zest/[controller]")]
     [ApiController]
     public class AccountController : ControllerBase
     {

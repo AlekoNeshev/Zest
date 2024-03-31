@@ -16,14 +16,14 @@ namespace Zest.UnitTests.UnitTests
 	{
 		private Mock<IPostResourcesService> _mockPostResourcesService;
 		private Mock<IPostService> _mockPostService;
-		private PostRescourcesController _controller;
+		private PostResourcesController _controller;
 
 		[SetUp]
 		public void Setup()
 		{
 			_mockPostResourcesService = new Mock<IPostResourcesService>();
 			_mockPostService = new Mock<IPostService>();
-			_controller = new PostRescourcesController(_mockPostResourcesService.Object, _mockPostService.Object);
+			_controller = new PostResourcesController(_mockPostResourcesService.Object, _mockPostService.Object);
 		}
 
 		[Test]

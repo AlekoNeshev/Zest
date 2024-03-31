@@ -5,7 +5,7 @@ using Zest.ViewModels.ViewModels;
 
 namespace Zest.Controllers
 {
-	[Route("api/[controller]")]
+	[Route("Zest/[controller]")]
     [ApiController]
     public class CommunityModeratorsController : Controller
     {

@@ -11,7 +11,6 @@ namespace Zest.Services.Infrastructure.Interfaces
 {
 	public interface IPostResourcesService
 	{
-		Task<PostRescourcesViewModel> GetPostResourceByIdAsync(int id);
 		Task<PostResources> AddPostResourceAsync(PostResources postResource);
 		Task<string> UploadFileAsync(int postId, IFormFileCollection postedFile);
 		Task<CustomFileStreamResult?> GetFileAsync(string fileName);

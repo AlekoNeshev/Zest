@@ -3,12 +3,11 @@ using Zest.Services.Infrastructure.Interfaces;
 
 namespace Zest.Controllers
 {
-	[Route("api/[controller]")]
+	[Route("Zest/[controller]")]
 	[ApiController]
 	
 	public class SignalRGroupsController : ControllerBase
 	{
-       
 		private readonly ISignaRService _signalRService;
 		public SignalRGroupsController(ISignaRService signalRService)
 

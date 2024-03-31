@@ -6,7 +6,7 @@ using Zest.Services.Infrastructure.Interfaces;
 namespace Zest.Controllers
 {
 	[Authorize]
-	[Route("api/[controller]")]
+	[Route("Zest/[controller]")]
 	[ApiController]
 	public class CommunityFollowersController : ControllerBase
 	{
@@ -20,7 +20,7 @@ namespace Zest.Controllers
 		[HttpGet]
 		public async Task<ActionResult<bool>> DoesExist(int communityId)
 		{
-			var accountId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			var accountId = User.Id();
 			bool doesExist = await _communityFollowerService.DoesExistAsync(accountId, communityId);
 			return doesExist;
 		}
@@ -29,7 +29,7 @@ namespace Zest.Controllers
 		[HttpPost]
 		public async Task<IActionResult> Add(int communityId)
 		{
-			var accountId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			var accountId = User.Id();
 			bool doesFolloweshipExist = await _communityFollowerService.DoesExistAsync(accountId, communityId);
 			if(doesFolloweshipExist)
 			{
@@ -43,7 +43,7 @@ namespace Zest.Controllers
 		[HttpDelete]
 		public async Task<IActionResult> Delete(int communityId)
 		{
-			var accountId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			var accountId = User.Id();
 			bool doesFolloweshipExist = await _communityFollowerService.DoesExistAsync(accountId, communityId);
 			if (!doesFolloweshipExist)
 			{

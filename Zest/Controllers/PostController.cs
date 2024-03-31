@@ -9,7 +9,7 @@ using Zest.ViewModels.ViewModels;
 namespace Zest.Controllers
 {
 	[Authorize]
-	[Route("api/[controller]")]
+	[Route("Zest/[controller]")]
     [ApiController]
     public class PostController : ControllerBase
     {
@@ -27,8 +27,7 @@ namespace Zest.Controllers
 		[HttpGet]
 		public async Task<ActionResult<PostViewModel>> Find(int id)
 		{
-			var user = User.Claims;
-			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var accountId = User.Id();
 			var post = await _postService.FindAsync(id, accountId);
 			if (post == null)
 			{
@@ -41,8 +40,7 @@ namespace Zest.Controllers
 		[HttpPost]
 		public async Task<ActionResult> Add(string title, [FromBody] string text, int communityId)
 		{
-			var user = User.Claims;
-			var publisherId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var publisherId = User.Id();
 			var doesCommunityExists = await _communityService.DoesExistAsync(communityId);
 			if (!doesCommunityExists)
 			{
@@ -57,8 +55,7 @@ namespace Zest.Controllers
 		[HttpPut]
 		public async Task<ActionResult> Remove(int postId)
 		{
-			var user = User.Claims;
-			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var accountId = User.Id();
 			var post = await _postService.FindAsync(postId, accountId);
 
 			if (post == null)
@@ -75,8 +72,7 @@ namespace Zest.Controllers
 		[HttpGet]
 		public async Task<ActionResult<PostViewModel[]>> GetByDate([FromRoute] DateTime lastDate, int communityId, int takeCount)
 		{
-			var user = User.Claims;
-			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var accountId = User.Id();
 			if (communityId !=0)
 			{
 				var doesCommunityExists = await _communityService.DoesExistAsync(communityId);
@@ -94,8 +90,7 @@ namespace Zest.Controllers
 		[HttpGet]
 		public async Task<ActionResult<PostViewModel[]>> GetByCommunity(int communityId)
 		{
-			var user = User.Claims;
-			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var accountId = User.Id();
 
 			var doesCommunityExists = await _communityService.DoesExistAsync(communityId);
 			if (doesCommunityExists == false)
@@ -111,8 +106,7 @@ namespace Zest.Controllers
 		[HttpPost]
 		public async Task<ActionResult<PostViewModel[]>> GetBySearch(string search, int takeCount, int communityId, [FromBody] int[]? skipIds)
 		{
-			var user = User.Claims;
-			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var accountId = User.Id();
 			if (string.IsNullOrWhiteSpace(search))
 			{
 				return BadRequest("Search is empty!");
@@ -135,8 +129,7 @@ namespace Zest.Controllers
 		[HttpPost]
 		public async Task<ActionResult<PostViewModel[]>> GetByTrending(int takeCount, int communityId,[FromBody] int[]? skipIds)
 		{
-			var user = User.Claims;
-			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var accountId = User.Id();
 			if (communityId !=0)
 			{
 				var doesCommunityExists = await _communityService.DoesExistAsync(communityId);
@@ -153,8 +146,7 @@ namespace Zest.Controllers
 		[HttpPost]
 		public async Task<ActionResult<PostViewModel[]>> GetByFollowed(int takeCount, [FromBody] int[]? skipIds)
 		{
-			var user = User.Claims;
-			var accountId = user.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			var accountId = User.Id();
 			var posts = await _postService.GetFollowedPostsAsync(skipIds, takeCount, accountId);
 			
 			return posts.ToArray();

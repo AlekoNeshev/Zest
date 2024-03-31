@@ -14,6 +14,6 @@ namespace Zest.Services.Infrastructure.Interfaces
 		Task<MessageViewModel[]> GetMessagesBySenderAndReceiverIdsAsync(string senderId, string receiverId, int takeCount, DateTime date);
 		Task<MessageViewModel> AddAsync(string senderId, string receiverId, string text);
 		Task RemoveAsync(int id);
-		Task<MessageViewModel> FindBySenderIdAndReceiverIdAsync(string senderId, string receiverId);
+		
 	}
 }

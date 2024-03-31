@@ -16,7 +16,7 @@ namespace Zest.UnitTests.UnitTests
 		private Mock<IMessageService> _mockMessageService;
 		private Mock<IHubContext<MessageHub>> _mockHubContext;
 		private Mock<IAccountService> _mockAccountService;
-		private MessagesController _controller;
+		private MessageController _controller;
 
 		[SetUp]
 		public void Setup()
@@ -24,7 +24,7 @@ namespace Zest.UnitTests.UnitTests
 			_mockMessageService = new Mock<IMessageService>();
 			_mockHubContext = new Mock<IHubContext<MessageHub>>();
 			_mockAccountService = new Mock<IAccountService>();
-			_controller = new MessagesController(_mockMessageService.Object, _mockHubContext.Object, _mockAccountService.Object);
+			_controller = new MessageController(_mockMessageService.Object, _mockHubContext.Object, _mockAccountService.Object);
 		}
 
 		[Test]
