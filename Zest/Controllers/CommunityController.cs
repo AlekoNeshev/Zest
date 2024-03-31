@@ -67,7 +67,7 @@ namespace Zest.Controllers
 			 await _communityService.DeleteCommunityAsync(communityId);
 			return Ok();
 		}
-		[Route("GetByAccountId/{accountId}/{takeCount}/{skipCount}")]
+		[Route("getByAccountId/{accountId}/{takeCount}/{skipCount}")]
 		[HttpGet]
 		public async Task<ActionResult<CommunityViewModel[]>> GetCommunitiesByAccount(string accountId, int takeCount, int skipCount = 0)
 		{
@@ -79,7 +79,7 @@ namespace Zest.Controllers
 			var communities = await _communityService.GetCommunitiesByAccount(accountId, takeCount, skipCount);
 			return communities;
 		}
-		[Route("GetByPopularityId/{takeCount}")]
+		[Route("getByPopularityId/{takeCount}")]
 		[HttpPost]
 		public async Task<ActionResult<CommunityViewModel[]>> GetCommunitiesByPopularity(int takeCount,[FromBody] int[]? skipIds)
 		{
