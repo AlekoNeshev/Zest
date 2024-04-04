@@ -28,7 +28,15 @@ namespace Zest.Services.Infrastructure.Services
 			}
 			return true;
 		}
-		public async Task<AccountViewModel> FindByIdAsync(string id)
+        public async Task UpdateAsync(string id, string username, string email)
+        {
+            var account = await _zestContext.Accounts.Where(x => x.Id == id).FirstOrDefaultAsync();
+			account.Email = email;
+			account.Username = username;
+           _zestContext.Update(account);
+			await _zestContext.SaveChangesAsync();
+        }
+        public async Task<AccountViewModel> FindByIdAsync(string id)
 		{
 			var account =_mapper.Map<AccountViewModel>(await _zestContext.Accounts.Where(x => x.Id == id).FirstOrDefaultAsync());
 			return account;

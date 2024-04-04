@@ -17,5 +17,7 @@ namespace Zest.Services.Infrastructure.Interfaces
 		Task<UserViewModel[]> GetBySearchAsync(string search, string accountId, int takeCount, string[]? skipIds);
 		Task<bool> FindByUsernameAsync(string username);
 		Task<bool> DoesExistAsync(string id);
-	}
+		Task UpdateAsync(string id, string username, string email);
+
+    }
 }
