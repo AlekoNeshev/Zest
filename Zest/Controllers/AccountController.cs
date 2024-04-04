@@ -28,7 +28,20 @@ namespace Zest.Controllers
 
             return account;
         }
-       
+        [Route("update/{name}/{email}")]
+        [HttpPut]
+        public async Task<IActionResult> Update(string name, string email)
+        {
+            var accountId = User.Id();
+            var account = await _accountService.DoesExistAsync(accountId);
+            if(account == null)
+            {
+                return BadRequest("No such account!");
+            }
+            await _accountService.UpdateAsync(accountId, name, email);
+            return Ok();
+        }
+
         [Route("add/{name}/{email}")]
         [HttpPost]
         public async Task<ActionResult<AccountViewModel>> Add(string name, string email)
