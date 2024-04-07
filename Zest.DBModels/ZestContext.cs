@@ -38,7 +38,7 @@ public partial class ZestContext : DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if(!optionsBuilder.IsConfigured)
-		optionsBuilder.UseSqlServer("DESKTOP-NPE4RND\\SQLEXPRESS;Database=Zest;Trusted_Connection=True;TrustServerCertificate=True").EnableSensitiveDataLogging();
+		optionsBuilder.UseSqlServer("AZURE_SQL_CONNECTIONSTRING").EnableSensitiveDataLogging();
         base.OnConfiguring(optionsBuilder);
 	}
 
