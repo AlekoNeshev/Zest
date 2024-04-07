@@ -114,7 +114,7 @@ namespace Zest.Services.Infrastructure.Services
 				{
 					Id = x.Id,
 					Type = x.Type,
-					Source = "https://jwz46sp0-5132.euw.devtunnels.ms/Zest/PostResources/get/"+x.Name
+					Source = "/Zest/PostResources/get/"+x.Name
 				});
 			}
 			return fileResults.ToArray();
