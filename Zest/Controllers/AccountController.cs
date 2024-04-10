@@ -34,7 +34,7 @@ namespace Zest.Controllers
         {
             var accountId = User.Id();
             var account = await _accountService.DoesExistAsync(accountId);
-            if(account == null)
+            if(account == false)
             {
                 return BadRequest("No such account!");
             }
@@ -47,8 +47,8 @@ namespace Zest.Controllers
         public async Task<ActionResult<AccountViewModel>> Add(string name, string email)
         {
             var accountId = User.Id();
-			var doesUsernameExist = _accountService.FindByUsernameAsync(name);
-            if(doesUsernameExist == null)
+			var doesUsernameExist = await _accountService.FindByUsernameAsync(name);
+            if(doesUsernameExist)
             {
                 return BadRequest("Username already exists!");
             }

@@ -37,23 +37,24 @@ public partial class ZestContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-       
-          
+
+        if (!optionsBuilder.IsConfigured)
+        {
             string connectionString = Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTIONSTRING");
 
-           
+
             if (!string.IsNullOrEmpty(connectionString))
             {
-               
+
                 optionsBuilder.UseSqlServer(connectionString).EnableSensitiveDataLogging();
             }
             else
             {
-                
+
                 Console.WriteLine("Warning: AZURE_SQL_CONNECTIONSTRING environment variable is not set.");
             }
-        
 
+        }
         base.OnConfiguring(optionsBuilder);
     }
 
