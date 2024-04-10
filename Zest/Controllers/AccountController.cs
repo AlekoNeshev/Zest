@@ -34,7 +34,7 @@ namespace Zest.Controllers
         {
             var accountId = User.Id();
             var account = await _accountService.DoesExistAsync(accountId);
-            if(account == null)
+            if(account == false)
             {
                 return BadRequest("No such account!");
             }
