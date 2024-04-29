@@ -46,7 +46,7 @@ public partial class ZestContext : DbContext
             if (!string.IsNullOrEmpty(connectionString))
             {
 
-                optionsBuilder.UseSqlServer(connectionString).EnableSensitiveDataLogging();
+                optionsBuilder.UseSqlServer(connectionString);
             }
             else
             {
