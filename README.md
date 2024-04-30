@@ -3,7 +3,7 @@
 
 API е разработен на .NET Web API, написан на езика за програмиране C#. Дадената технология е избрана, зареди нейната надеждност, добра и подробна документация и голям избор от публични ресурси.
 
-[Documentation for Zest](https://docs.google.com/document/d/1qqqjbg7KEzuyHqtHrxew4PBPGfpP7X1eJF-H1fZSR1A/edit)
+[Documentation for Zest](https://docs.google.com/document/d/1_bVuJu_zScgK3iwTjZTo0jCmbtr0PDWtfIlekuLMpU8/edit?usp=sharing)
 
 ## Дизайн
 
