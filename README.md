@@ -1,13 +1,5 @@
 # Zest 
 ## Твоят път към науката
-<img src="{https://img.shields.io/badge/Microsoft%20SQL%20Server-CC2927?style=for-the-badge&logo=microsoft%20sql%20server&logoColor=white}" />
-<img src="{https://img.shields.io/badge/.NET-512BD4?style=for-the-badge&logo=dotnet&logoColor=white}" />
-<img src="{https://img.shields.io/badge/Visual_Studio-5C2D91?style=for-the-badge&logo=visual%20studio&logoColor=white}" />
-<img src="{https://img.shields.io/badge/C%23-239120?style=for-the-badge&logo=csharp&logoColor=white}" />
-<img src="{https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white}"/ >
-<img src="{https://img.shields.io/badge/mac%20os-000000?style=for-the-badge&logo=apple&logoColor=white}" />
-<img src="{https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white}" />
-<img src="{https://img.shields.io/badge/iOS-000000?style=for-the-badge&logo=ios&logoColor=white}" />
 API е разработен на .NET Web API, написан на езика за програмиране C#. Дадената технология е избрана, зареди нейната надеждност, добра и подробна документация и голям избор от публични ресурси.
 
 [Documentation for Zest](https://docs.google.com/document/d/1_bVuJu_zScgK3iwTjZTo0jCmbtr0PDWtfIlekuLMpU8/edit?usp=sharing)
