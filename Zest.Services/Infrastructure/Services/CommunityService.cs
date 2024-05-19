@@ -53,7 +53,7 @@ namespace Zest.Services.Infrastructure.Services
 				Name = name,
 				Information = discription,
 				CreatorId = creatorId,
-				CreatedOn = DateTime.Now,
+				CreatedOn = DateTime.UtcNow,
 			};
 			await _context.AddAsync(community);
 			
@@ -63,7 +63,7 @@ namespace Zest.Services.Infrastructure.Services
 				CommunityId = community.Id,
 				AccountId = creatorId,
 				IsApproved = true,
-				CreatedOn = DateTime.Now
+				CreatedOn = DateTime.UtcNow
 			};
 			await _context.AddAsync(communityModerator);
 			await _context.SaveChangesAsync();

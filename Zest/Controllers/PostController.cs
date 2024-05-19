@@ -36,9 +36,9 @@ namespace Zest.Controllers
 			return post;
 		}
 
-		[Route("add/{title}/community/{communityId}")]
+		[Route("add/community/{communityId}")]
 		[HttpPost]
-		public async Task<ActionResult> Add(string title, [FromBody] string text, int communityId)
+		public async Task<ActionResult> Add(int communityId, [FromBody] PostBaseViewModel postInfo)
 		{
 			var publisherId = User.Id();
 			var doesCommunityExists = await _communityService.DoesExistAsync(communityId);
@@ -47,7 +47,7 @@ namespace Zest.Controllers
 				return BadRequest("Community does not exists");
 			}
 
-			var post = await _postService.AddAsync(title, text, publisherId, communityId);
+			var post = await _postService.AddAsync(postInfo.Title, postInfo.Text, publisherId, communityId);
 			return Ok(post.Id);
 		}
 

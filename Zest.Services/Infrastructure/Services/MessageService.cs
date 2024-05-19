@@ -41,7 +41,7 @@ namespace Zest.Services.Infrastructure.Services
 				SenderId = senderId,
 				ReceiverId = receiverId,
 				Text = text,
-				CreatedOn = DateTime.Now
+				CreatedOn = DateTime.UtcNow
 			};
 
 			await _context.AddAsync(message);

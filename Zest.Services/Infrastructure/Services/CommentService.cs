@@ -56,11 +56,11 @@ namespace Zest.Services.Infrastructure.Services
 
 			if (commentId == 0)
 			{
-				comment = await _context.AddAsync(new Comment { AccountId = accountId, PostId = postId, Text = text, CreatedOn = DateTime.Now });
+				comment = await _context.AddAsync(new Comment { AccountId = accountId, PostId = postId, Text = text, CreatedOn = DateTime.UtcNow });
 			}
 			else
 			{
-				comment = await _context.AddAsync(new Comment { AccountId = accountId, PostId = postId, CommentId = commentId, Text = text, CreatedOn = DateTime.Now });
+				comment = await _context.AddAsync(new Comment { AccountId = accountId, PostId = postId, CommentId = commentId, Text = text, CreatedOn = DateTime.UtcNow });
 			}
 
 			await _context.SaveChangesAsync();
@@ -109,7 +109,7 @@ namespace Zest.Services.Infrastructure.Services
 		{
 
 
-			var comments = await _context.Comments.Where(x => x.PostId == postId).Include(x => x.Account)
+			var comments = await _context.Comments.Where(x => x.PostId == postId && x.CommentId == null).Include(x => x.Account)
 			.Include(x => x.Account)
 			.Include(x => x.Likes)
 				.Include(x => x.Replies).ThenInclude(r => r.Likes)

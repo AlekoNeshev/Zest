@@ -28,7 +28,7 @@ namespace Zest.Services.Infrastructure.Services
 		}
 		public async Task AddModeratorAsync(string accountId, int communityId)
 		{
-			context.Add(new CommunityModerator { AccountId = accountId, CommunityId = communityId, IsApproved = false, CreatedOn = DateTime.Now });
+			context.Add(new CommunityModerator { AccountId = accountId, CommunityId = communityId, IsApproved = false, CreatedOn = DateTime.UtcNow });
 			await context.SaveChangesAsync();
 		}
 

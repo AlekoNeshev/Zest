@@ -20,7 +20,7 @@ namespace Zest.Services.Infrastructure.Services
 				AccountId = accountId,
 				PostId = postId,
 				Value = value,
-				CreatedOn = DateTime.Now
+				CreatedOn = DateTime.UtcNow
 			});
 
 			await _context.SaveChangesAsync();
@@ -33,7 +33,7 @@ namespace Zest.Services.Infrastructure.Services
 				AccountId = accountId,
 				CommentId = commentId,
 				Value = value,
-				CreatedOn = DateTime.Now
+				CreatedOn = DateTime.UtcNow
 			});
 
 			await _context.SaveChangesAsync();
