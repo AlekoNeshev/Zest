@@ -45,7 +45,11 @@ namespace Zest.Services.Infrastructure.Services
 				.Where(follower => following.Any(follow => follow.FollowedId == follower.FollowerId)).Skip(skipCount).Take(takeCount)
 				.ToList();
 			var friendsViewModels = _mapper.Map<List<BaseAccountViewModel>>(friends);
-			friendsViewModels.AddRange(_mapper.Map<BaseAccountViewModel[]>(await _context.Accounts.Where(x => x.IsAdmin == true && x.Id != accountId).ToArrayAsync()));
+			if(skipCount == 0) 
+			{
+				friendsViewModels.AddRange(_mapper.Map<BaseAccountViewModel[]>(await _context.Accounts.Where(x => x.IsAdmin == true && x.Id != accountId).ToArrayAsync()));
+			}
+			
 			return friendsViewModels.GroupBy(x => x.Id).Select(group => group.First()).ToArray();
 		}
 		public async Task<BaseAccountViewModel[]> GetBySearchAsync(string search, string accountId, int takeCount, string[] skipIds)

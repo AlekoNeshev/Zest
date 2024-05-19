@@ -6,11 +6,9 @@ using System.Threading.Tasks;
 
 namespace Zest.ViewModels.ViewModels
 {
-    public class PostViewModel
+    public class PostViewModel : PostBaseViewModel
     {
         public int Id { get; set; }
-        public string Title { get; set; }
-        public string Text { get; set; }
         public string Publisher { get; set; }
         public string CommunityName { get; set; }
         public int CommunityId { get; set; }

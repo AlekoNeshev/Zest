@@ -109,7 +109,7 @@ namespace Zest.Services.Infrastructure.Services
 		{
 
 
-			var comments = await _context.Comments.Where(x => x.PostId == postId).Include(x => x.Account)
+			var comments = await _context.Comments.Where(x => x.PostId == postId && x.CommentId == null).Include(x => x.Account)
 			.Include(x => x.Account)
 			.Include(x => x.Likes)
 				.Include(x => x.Replies).ThenInclude(r => r.Likes)

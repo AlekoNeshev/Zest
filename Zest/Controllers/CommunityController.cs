@@ -44,13 +44,13 @@ namespace Zest.Controllers
 			return communities;
 		}
 
-		[Route("add/{name}")]
+		[Route("add")]
 		[HttpPost]
-		public async Task<ActionResult<int>> Add(string name, [FromBody] string discription)
+		public async Task<ActionResult<int>> Add([FromBody] CommunityBaseViewModel communityInfo)
 		{
 			var creatorId = User.Id();
 			
-			var communityId = await _communityService.AddCommunityAsync(creatorId, name, discription);
+			var communityId = await _communityService.AddCommunityAsync(creatorId, communityInfo.Name, communityInfo.Description);
 			return communityId;
 		}
 		[Route("delete/{communityId}")]
