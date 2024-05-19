@@ -7,11 +7,11 @@ API е разработен на .NET Web API, написан на езика з
 ## Дизайн
 
 - API е състван от 5 проекта:
--- Zest - Web Application
--- Zest_DBModels - Библиотека, в която стои DBContext и DB моделите
--- Zest_Services  - Библиотека, в което стоят услугите на API. 
--- Zest_ViewModels - Библиотека, в която стоят DTO на DB моделите
--- Zest_UnitTests - Тестове за API
+  - Zest-Web Application
+  - Zest_DBModels-Библиотека, в която стои DBContext и DB моделите
+  - Zest_Services-Библиотека, в което стоят услугите на API. 
+  - Zest_ViewModels-Библиотека, в която стоят DTO на DB моделите
+  - Zest_UnitTests-Тестове за API
 
 ## Правила на мрежата
 Всички потребители трябва да спазват следните правила. При нарушаване на правилата 3 пъти, потребителя ще бъде блокиран.
