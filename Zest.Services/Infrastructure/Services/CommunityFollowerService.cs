@@ -23,7 +23,7 @@ namespace Zest.Services.Infrastructure.Services
 		{
 			if (!await DoesExistAsync(accountId, communityId))
 			{
-				_context.Add(new CommunityFollower { AccountId = accountId, CommunityId = communityId, CreatedOn = DateTime.Now });
+				_context.Add(new CommunityFollower { AccountId = accountId, CommunityId = communityId, CreatedOn = DateTime.UtcNow });
 				await _context.SaveChangesAsync();
 			}
 		}

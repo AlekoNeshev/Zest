@@ -56,11 +56,11 @@ namespace Zest.Services.Infrastructure.Services
 
 			if (commentId == 0)
 			{
-				comment = await _context.AddAsync(new Comment { AccountId = accountId, PostId = postId, Text = text, CreatedOn = DateTime.Now });
+				comment = await _context.AddAsync(new Comment { AccountId = accountId, PostId = postId, Text = text, CreatedOn = DateTime.UtcNow });
 			}
 			else
 			{
-				comment = await _context.AddAsync(new Comment { AccountId = accountId, PostId = postId, CommentId = commentId, Text = text, CreatedOn = DateTime.Now });
+				comment = await _context.AddAsync(new Comment { AccountId = accountId, PostId = postId, CommentId = commentId, Text = text, CreatedOn = DateTime.UtcNow });
 			}
 
 			await _context.SaveChangesAsync();

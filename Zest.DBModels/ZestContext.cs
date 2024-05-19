@@ -40,7 +40,7 @@ public partial class ZestContext : DbContext
 
         if (!optionsBuilder.IsConfigured)
         {
-			string connectionString = Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTIONSTRING");
+             string connectionString = Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTIONSTRING");
 
 			if (!string.IsNullOrEmpty(connectionString))
             {

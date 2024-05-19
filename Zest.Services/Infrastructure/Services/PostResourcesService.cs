@@ -78,7 +78,7 @@ namespace Zest.Services.Infrastructure.Services
 						Name = $"{newName}{postedFileExtension}",
 						Type = type.Split("/").ToArray()[0].Trim(),
 						Path = filePath,
-						CreatedOn = DateTime.Now,
+						CreatedOn = DateTime.UtcNow,
 						PostId = postId
 					};
 

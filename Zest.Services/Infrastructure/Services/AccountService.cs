@@ -60,7 +60,7 @@ namespace Zest.Services.Infrastructure.Services
 				Id = accountId,
 				Username = username,
 				Email = email,
-				CreatedOn = DateTime.Now,
+				CreatedOn = DateTime.UtcNow,
 				IsAdmin = false
 			});
 			 await _zestContext.SaveChangesAsync();

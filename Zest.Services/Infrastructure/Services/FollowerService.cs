@@ -25,7 +25,7 @@ namespace Zest.Services.Infrastructure.Services
 
 		public async Task AddAsync(string followerId, string followedId)
 		{
-			await _context.Followers.AddAsync(new Follower { FollowerId = followerId, FollowedId = followedId, CreatedOn = DateTime.Now });
+			await _context.Followers.AddAsync(new Follower { FollowerId = followerId, FollowedId = followedId, CreatedOn = DateTime.UtcNow });
 			await _context.SaveChangesAsync();
 		}
 

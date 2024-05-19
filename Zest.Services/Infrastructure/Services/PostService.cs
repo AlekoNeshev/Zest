@@ -44,7 +44,7 @@ namespace Zest.Services.Infrastructure.Services
 				Text = text,
 				AccountId = accountId,
 				CommunityId = communityId,
-				CreatedOn = DateTime.Now,
+				CreatedOn = DateTime.UtcNow,
 			};
 
 			await _context.AddAsync(post);
